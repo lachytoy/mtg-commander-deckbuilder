@@ -25,7 +25,7 @@ land denial, late-game combos OK).
 
 - **Windows 10/11** with **Windows PowerShell 5.1** (preinstalled — nothing to set up). This is the supported,
   tested platform.
-- **Claude Code** (the CLI/desktop app you're reading this in).
+- **Claude Code** on **Windows** (see *Compatibility* below — Claude Cowork's sandbox can't run the engine).
 - An **internet connection** (Scryfall / EDHREC / Commander Spellbook are queried live during a build).
 - A **[Moxfield](https://moxfield.com)** collection you can export to CSV.
 
@@ -35,26 +35,30 @@ land denial, late-game combos OK).
 
 ---
 
+## Compatibility
+
+The engine is **Windows PowerShell** and reads/writes files directly on your machine, so the plugin
+only *runs* where Claude Code has local shell + file access:
+
+- ✅ **Claude Code (CLI) on Windows** — fully supported. This is the way to use it.
+- ❌ **Claude Cowork** — *not* supported. Cowork executes shell commands in a sandboxed Linux VM (no
+  Windows PowerShell), with file access limited to connected folders, so the engine can't run there — even
+  though the plugin will appear to "install." Making it Cowork-native would mean rewriting the engine as a
+  cross-platform script or a local MCP server; that's a possible future project, not done yet.
+- ⚠️ **macOS / Linux** — untested (see the Requirements note above).
+
 ## Install
 
-Pick whichever fits how you run Claude. Either way the plugin bundles everything it needs
-(engine, templates, mana-symbol assets, and the skills), and the engine runs locally — so the
-**Requirements** above (Windows + PowerShell) still apply.
-
-### Option A — Marketplace command (Claude Code, Claude Desktop, or Cowork)
-Paste these into the Claude prompt:
+In **Claude Code on Windows**, register this repo and install the plugin — run once, then it stays enabled:
 ```
 /plugin marketplace add lachytoy/mtg-commander-deckbuilder
 /plugin install mtg-commander-deckbuilder@lachytoy
 ```
-Nothing to download — this pulls everything straight from this repo.
+To pull updates later: `/plugin marketplace update lachytoy`.
 
-### Option B — Upload in Claude Desktop (no commands)
-1. Download **`mtg-commander-deckbuilder-v1.0.0.zip`** from the **[latest release](https://github.com/lachytoy/mtg-commander-deckbuilder/releases/latest)**.
-   > ⚠️ Use that **release** zip — *not* the green **Code → Download ZIP** button. GitHub's download wraps
-   > everything in a sub-folder, but the uploader needs `plugin.json` at the zip root, so the wrapped one fails.
-2. In Claude Desktop: **Customize → Personal plugins → ➕ → Create plugin → Upload plugin**.
-3. Select the `.zip`. It installs under *Personal plugins*. (The picker may also list `.plugin`, but `.zip` is the one that uploads reliably.)
+**Offline (from a downloaded copy):** download `mtg-commander-deckbuilder-v1.0.0.zip` from the
+[latest release](https://github.com/lachytoy/mtg-commander-deckbuilder/releases/latest), unzip it, and start
+Claude Code pointed at the folder: `claude --plugin-dir path\to\mtg-commander-deckbuilder`.
 
 ## First run — the setup wizard
 
