@@ -1,0 +1,19 @@
+{
+  "name": "lachytoy",
+  "owner": {
+    "name": "lachytoy",
+    "url": "https://github.com/lachytoy"
+  },
+  "metadata": {
+    "description": "Lachy's Claude Code plugins."
+  },
+  "plugins": [
+    {
+      "name": "mtg-commander-deckbuilder",
+      "source": "./",
+      "description": "Build Bracket-3 Commander/EDH decks from your MTG collection — Claude is the deckbuilding brain.",
+      "category": "games",
+      "keywords": ["mtg", "commander", "edh", "deckbuilder"]
+    }
+  ]
+}

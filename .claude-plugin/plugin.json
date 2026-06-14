@@ -1,0 +1,23 @@
+{
+  "name": "mtg-commander-deckbuilder",
+  "displayName": "MTG Commander Deckbuilder",
+  "version": "1.0.0",
+  "description": "Build Bracket-3 Commander/EDH decks from your Magic: The Gathering collection, with Claude as the deckbuilding brain. Imports a Moxfield collection, pulls EDHREC + Scryfall + Commander Spellbook data, hand-authors two decks (best-owned + optimal), and outputs a self-contained interactive HTML report plus Moxfield-importable lists.",
+  "author": {
+    "name": "lachytoy",
+    "url": "https://github.com/lachytoy"
+  },
+  "homepage": "https://github.com/lachytoy/mtg-commander-deckbuilder",
+  "repository": "https://github.com/lachytoy/mtg-commander-deckbuilder",
+  "license": "MIT",
+  "keywords": [
+    "mtg",
+    "magic-the-gathering",
+    "commander",
+    "edh",
+    "deckbuilder",
+    "scryfall",
+    "edhrec",
+    "moxfield"
+  ]
+}
