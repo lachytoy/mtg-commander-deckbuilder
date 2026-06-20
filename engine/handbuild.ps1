@@ -1,16 +1,22 @@
 <#
   HAND-AUTHORED builds for Tayam, Luminous Enigma (the AI deckbuilding step) - and the copy-me TEMPLATE
   for new commanders: copy to handbuild-<slug>.ps1, change $commander + the card lists + play metadata.
-  Writes data/<slug>/variants.json (slug auto-derived from $commander) with exactly TWO Bracket-3 decks:
-    owned   = "Fully owned"  - the best deck from the collection right now (0 buys)
-    optimal = "Optimal"      - the best Bracket-3 deck = owned + the buys worth making,
-                               excluding the silly cEDH chase cards (no price cap otherwise)
+  Writes data/<slug>/variants.json (slug auto-derived from $commander) with Bracket-3 decks + a GC picker pool:
+    owned   = "Fully owned"        - the best deck from the collection right now (0 buys)
+    optimal = "Optimal"            - the best Bracket-3 deck = owned + the buys worth making,
+                                     excluding the silly cEDH chase cards (no price cap otherwise)
+    synergy = "Commander-centric"  - (optional 3rd build) rebuilt so the commander is the engine AND
+                                     the payoff; Tayam-first but still packs the strong on-theme combos
   Each card carries a one-line "why it's here" reason. Lands include basics with counts.
+  $gcPicks  = a curated shortlist of high-synergy Game Changers (name | reason) the engine enriches into
+              deck-data.json -> D.gcOptions, which powers the in-page "Game Changers" picker (swap within
+              the bracket's GC cap). These are the GC menu for the commander, not necessarily all in a build.
   After running this: engine -Stage build (enrich + Spellbook combos + validate) then -Stage inject.
 
-  Both decks are Bracket 3: <=3 Game Changers, no mass land denial, late-game 2-3 card combos OK.
+  All builds are Bracket 3: <=3 Game Changers, no mass land denial, late-game 2-3 card combos OK.
     owned   GC = Smothering Tithe, Farewell, Crop Rotation
     optimal GC = Smothering Tithe, Demonic Tutor, Survival of the Fittest
+    synergy GC = Smothering Tithe, Survival of the Fittest, Farewell
 #>
 param([string]$Root)
 $ErrorActionPreference='Stop'
@@ -234,18 +240,124 @@ Swamp | Basic black source for Tayam and the aristocrats. | 4
 Plains | Basic white source for removal and protection. | 3
 '@
 
+# --------------------------------------------------------- COMMANDER-CENTRIC (synergy)
+# Tayam-first but no longer puritanical: the commander is the engine AND a payoff, and the build now runs
+# the strong on-theme combos a Tayam shell wants - Walking Ballista fed by Devoted Druid + Vizier infinite
+# mana, and Walking Ballista + Mikaeus + a free sac outlet - alongside the infinite reanimation-drain loop
+# that runs through Tayam. Almost every creature is MV<=3 so Tayam can rebuild the deck after a wipe.
+$synNonland = @'
+Sol Ring | Turn-one acceleration; the extra mana powers repeated {3} Tayam activations.
+Arcane Signet | Fixes Abzan and helps you hit Tayam's activation on curve.
+Birds of Paradise | One-mana any-color dork and a cheap body to recur and resacrifice.
+Llanowar Elves | Turn-one green dork; trivially rebought by Tayam if it dies.
+Elvish Mystic | Redundant turn-one dork to land Tayam early and fund his ability.
+Priest of Titania | Scales with your wide elf/creature board into the mana that fuels endless {3} activations.
+Bloom Tender | Two-mana dork that taps for a huge chunk of Abzan mana once Tayam and friends are down.
+Devoted Druid | An Elf mana dork that makes infinite green with Vizier of Remedies - pour it into Walking Ballista to win; an MV-2 body Tayam happily reanimates.
+Selvala, Heart of the Wilds | Explosive mana off your biggest creature - the cleanest way to chain Tayam activations all turn.
+Sakura-Tribe Elder | Chump, ramp, and a perfect MV-2 body to sacrifice and recur for value.
+Dryad of the Ilysian Grove | Ramp + fixing on an MV-3 body Tayam happily reanimates each turn.
+Cathars' Crusade | THE engine: every creature ETB puts a +1/+1 counter on each creature you control, refilling Tayam's fuel faster than he spends it - the core of the loop.
+Good-Fortune Unicorn | Each creature you make enters with a +1/+1 counter, doubling up with Tayam's vigilance counter as activation fuel.
+Rishkar, Peema Renegade | Drops +1/+1 counters and turns your counter-laden creatures into mana dorks to power Tayam.
+Winding Constrictor | Adds one to every counter you'd place - turbocharges Cathars/Tayam fuel generation.
+Hardened Scales | One-mana counter multiplier; makes the Cathars loop counter-positive even on a small board.
+Branching Evolution | Doubles every +1/+1 counter placed, so each Cathars trigger more than refunds a Tayam activation.
+Mazirek, Kraul Death Priest | Every permanent you sacrifice puts a +1/+1 counter on each creature - a second counter engine that feeds Tayam off your sac outlets.
+Ozolith, the Shattered Spire | Counter on each creature you cast and a counter mover - keeps Tayam fuel flowing and rescues counters from dying creatures.
+Viscera Seer | Free sac outlet; loops with Tayam recursion and turns Walking Ballista + Mikaeus into infinite pings.
+Carrion Feeder | Free sac outlet that grows on counters - sacrifice, recur with Tayam, repeat, and the outlet for the Ballista + Mikaeus loop.
+Ashnod's Altar | Free sac outlet that makes {C}{C} per creature - the mana half of the infinite Tayam drain loop (and of Ballista + Mikaeus).
+Blood Artist | Drains each opponent on every creature death - the payoff that turns the Tayam loop lethal.
+Zulaport Cutthroat | Redundant Blood Artist; each looped death drains the table by one.
+Bastion of Remembrance | On-board drain that Tayam can itself reanimate (MV 3) - the most resilient payoff for the loop.
+Elas il-Kor, Sadistic Pilgrim | Drains on death AND pings on your own ETBs, so the Tayam reanimation loop bleeds the table from both ends.
+Pitiless Plunderer | Makes a Treasure on each creature death - the third mana per loop that lets Ashnod's Altar fully pay Tayam's {3}.
+Vizier of Remedies | Removes Devoted Druid's untap drawback for infinite green mana, and stops -1/-1 counters hurting your team; an MV-3 Tayam target.
+Walking Ballista | An MV-0 Tayam reanimation target, a +1/+1-counter payoff, repeatable removal, and the sink for infinite mana - your cleanest direct-damage kill.
+Mikaeus, the Unhallowed | Gives your non-Humans +1/+1 and undying (free counters + resilience), and combos with Walking Ballista plus a free sac outlet for infinite pings.
+Eternal Witness | Premium MV-3 target: rebuy any spell from the yard every time Tayam returns it.
+Reclamation Sage | Recurring artifact/enchantment removal - reanimate it whenever the table plays a problem permanent.
+Skyclave Apparition | Repeatable exile removal on an MV-3 body; Tayam turns it into a removal engine.
+Ramunap Excavator | Lets you replay sacrificed/fetched lands; an MV-3 value body Tayam loves to return.
+Tireless Tracker | Clues + counters whenever you play a land - card advantage that also feeds Tayam fuel.
+Recruiter of the Guard | Tutors any toughness-2-or-less creature (sac outlets, payoffs, combo pieces) to hand on ETB - re-buyable with Tayam.
+Spore Frog | Recur it with Tayam every turn for a repeatable Fog - a soft lock that buys the time to combo off.
+Kitchen Finks | Persist creature: with a free sac outlet (Viscera Seer / Carrion Feeder / Ashnod's Altar) + Cathars' Crusade it loops forever - Cathars' +1/+1 cancels persist's -1/-1 so it never stays dead - for infinite ETBs/deaths; add an aristocrat to drain the table. Also an MV-3 Tayam target that gains 2 life each bounce.
+Victimize | Sacrifice one creature to reanimate two - explosive with cheap ETB bodies and a head start on the loop.
+Wood Elves | MV-3 ETB ramp that fetches a Forest-type dual - a clean, repeatable Tayam reanimation target.
+Buried Alive | Stocks the yard with three creatures for Tayam (or Victimize) to reanimate immediately.
+Birthing Pod | Sacrifice a creature to fetch one a mana-value higher - chains your toolbox of ETB targets straight onto the battlefield.
+Eldritch Evolution | Sac a creature to tutor a bigger one to the battlefield - finds a payoff or combo piece at instant value.
+Survival of the Fittest | Game Changer creature-tutor engine: discard to find any combo piece, then reanimate it with Tayam - the deck's consistency backbone.
+Final Parting | Tutors any card to hand and bins a second for Tayam to return - assembles the loop in one card.
+Night's Whisper | Cheap two-card burst to keep the engine fed.
+Read the Bones | Card draw with scry that also fills the yard for Tayam.
+Black Market Connections | Flexible draw + ramp + bodies; the Treasures help pay Tayam's {3} every turn.
+Skullclamp | Turns your dorks and looped creatures into a card-draw furnace; absurd with free sac outlets.
+Smothering Tithe | Game Changer ramp; Treasures snowball into the mana that fuels chained Tayam activations.
+Swords to Plowshares | Best-in-class one-mana exile removal.
+Path to Exile | One-mana exile to answer a threat or combo piece.
+Go for the Throat | Efficient instant-speed creature kill.
+Assassin's Trophy | Answers any permanent at instant speed.
+Anguished Unmaking | Exiles any nonland permanent - flexible catch-all.
+Beast Within | Destroys any permanent; the 3/3 is irrelevant when you out-grind it.
+Generous Gift | Removes any permanent at instant speed for three mana.
+Farewell | Game Changer modular wipe - choose exactly what to sweep, then rebuild faster via Tayam recursion.
+Austere Command | Flexible four-mode wipe you can angle to spare your own board.
+Swiftfoot Boots | Hexproof + haste to protect Tayam and activate him the turn he lands.
+Sylvan Safekeeper | Sac lands to give Tayam (or a combo piece) shroud through removal.
+Heroic Intervention | Protects your whole board from a wipe or targeted removal on the combo turn.
+Overrun | The fair-plan kill: a board fattened by counters swings for lethal with trample.
+'@
+
+$synLands = @'
+Command Tower | Perfect Abzan fixing.
+Overgrown Tomb | B/G shock dual, fetchable.
+Godless Shrine | W/B shock dual, fetchable.
+Sandsteppe Citadel | Abzan tri-land.
+Canopy Vista | G/W dual that enters untapped with two basics.
+Blossoming Sands | G/W gain-land fixing.
+Jungle Hollow | B/G gain-land fixing.
+Scoured Barrens | W/B gain-land fixing.
+Shattered Sanctum | W/B slow/surveil dual.
+Sunlit Marsh | W/B fixing.
+Twilight Mire | B/G filter land.
+Vernal Fen | B/G fixing.
+Llanowar Wastes | B/G painland.
+Brushland | G/W painland.
+Path of Ancestry | Fixing + a free counter-friendly scry off your typed creatures.
+Windswept Heath | Fetch for Forest/Plains types.
+Misty Rainforest | Fetch for Forest sources.
+Bloodstained Mire | Fetch for Swamp sources.
+Wooded Foothills | Fetch that grabs your Forest duals.
+Polluted Delta | Fetch for Swamp sources.
+Fabled Passage | Budget fetch for any basic.
+Phyrexian Tower | Sacrifice a creature for {B}{B} - a land-based sac outlet that feeds the loop.
+Bojuka Bog | Graveyard hate stapled to a land.
+Urborg, Tomb of Yawgmoth | Turns all lands into Swamps for black-heavy fixing.
+Nesting Grounds | Moves a counter each turn - quietly tops up or redistributes Tayam fuel.
+Forest | Basic green source. | 4
+Plains | Basic white source. | 3
+Swamp | Basic black source. | 4
+'@
+
 $owned = @(Parse $ownedNonland) + @(Parse $ownedLands)
 $opt   = @(Parse $optNonland)   + @(Parse $optLands)
+$syn   = @(Parse $synNonland)   + @(Parse $synLands)
 
 # validate owned-build cards are actually in the collection
 $ownedSet=@{}; foreach($o in (Get-Content (Join-Path $data 'owned.json') -Raw -Encoding UTF8 | ConvertFrom-Json)){ $n=$o.name.ToLower(); $ownedSet[$n]=$true; if($n -match ' // '){ $ownedSet[(($n -split ' // ')[0])]=$true } }
 $notOwned = @($owned | Where-Object { -not $ownedSet.ContainsKey($_.name.ToLower()) })
 if($notOwned.Count){ "WARNING - Fully-owned build references cards NOT in collection:"; $notOwned | ForEach-Object { "   $($_.name)" } }
 
-"Fully owned : $(Total $owned) cards ($(@($owned).Count) lines)"
-"Optimal     : $(Total $opt) cards ($(@($opt).Count) lines)"
+"Fully owned       : $(Total $owned) cards ($(@($owned).Count) lines)"
+"Optimal           : $(Total $opt) cards ($(@($opt).Count) lines)"
+"Commander-centric : $(Total $syn) cards ($(@($syn).Count) lines)"
 $buys = @($opt | Where-Object { -not $ownedSet.ContainsKey($_.name.ToLower()) })
 "Optimal buys: $($buys.Count) -> $((@($buys|ForEach-Object{$_.name})) -join ', ')"
+$synBuys = @($syn | Where-Object { -not $ownedSet.ContainsKey($_.name.ToLower()) })
+"Commander-centric buys: $($synBuys.Count) -> $((@($synBuys|ForEach-Object{$_.name})) -join ', ')"
 
 # ------------------------------------------------------------------- play meta
 $themeOwned = @'
@@ -278,7 +390,7 @@ $howOwned = [pscustomobject]@{ win=$ownedWin.Trim(); keep=$ownedKeep.Trim(); ear
 
 # --- OPTIMAL how-to-play (verified against the decklist by the deckbuilding workflow) ---
 $optWin = @'
-This deck wins two ways, and the FAIR plan is your default. FAIR (most games): build a wide creature board, pump it every turn with Cathars' Crusade +1/+1 counters, then either alpha-strike for lethal combat damage or grind the table out through aristocrat drain - repeatedly sacrifice and recur creatures with Tayam plus a sac outlet while a drain payoff bleeds the table - Zulaport Cutthroat, Cruel Celebrant, or Bastion of Remembrance each hit EVERY opponent for 1 on every death (Blood Artist drains one chosen player per death, still lethal across a long loop). COMBO (when it assembles): almost every loop here produces only infinite death/ETB triggers, which do NOTHING on their own - they win ONLY because a drain payoff already in play turns each death into life loss (Zulaport / Cruel Celebrant / Bastion hit each opponent; Blood Artist hits one chosen player) and drains the whole table to 0 over the infinite loop. The single exception is Walking Ballista + Mikaeus, the Unhallowed, which deals damage DIRECTLY and needs no payoff: you ping each opponent's face to 0. Hard rule: never start a sacrifice loop unless a drain payoff is already on the battlefield (or you have Ballista + Mikaeus).
+This deck wins two ways, and the FAIR plan is your default. FAIR (most games): build a wide creature board, pump it every turn with Cathars' Crusade +1/+1 counters, then either alpha-strike for lethal combat damage or grind the table out through aristocrat drain - repeatedly sacrifice and recur creatures with Tayam plus a sac outlet while a drain payoff bleeds the table - Zulaport Cutthroat, Cruel Celebrant, or Bastion of Remembrance each hit EVERY opponent for 1 on every death (Blood Artist drains one chosen player per death, still lethal across a long loop). COMBO (when it assembles): almost every loop here produces only infinite death/ETB triggers, which do NOTHING on their own - they win ONLY because a drain payoff already in play turns each death into life loss (Zulaport / Cruel Celebrant / Bastion hit each opponent; Blood Artist hits one chosen player) and drains the whole table to 0 over the infinite loop. The exceptions are the Walking Ballista lines, which deal damage DIRECTLY and need no drain payoff: Devoted Druid + Vizier of Remedies makes infinite green mana to fire Walking Ballista's {4} ability at each opponent's face, and Walking Ballista + Mikaeus, the Unhallowed loops with a free sac outlet (Viscera Seer / Carrion Feeder / Ashnod's Altar) - note Mikaeus's +1/+1 keeps a 0-counter Ballista alive, so that line needs the sac outlet to die and loop. Hard rule: never start a death/sacrifice drain loop unless a drain payoff is already on the battlefield (the Walking Ballista lines are the only ones exempt).
 '@
 $optKeep = @'
 Keep a hand with 2-3 lands plus (a) an early green source - a mana dork (Birds of Paradise, Llanowar Elves, Elvish Mystic) or a rock (Sol Ring, Arcane Signet) - AND (b) a way to spend that mana: a draw engine (Skullclamp, Midnight Reaper, Night's Whisper, Read the Bones) or a tutor (Demonic Tutor, Survival of the Fittest). The ideal keep casts Tayam by turn 3-4 with a creature or two already down to fuel his ability. You do NOT need a combo piece in hand - you tutor for those. Survival of the Fittest in the opener is an auto-keep; it singlehandedly assembles every combo over a few turns. A lone Blood Artist or sac outlet is a bonus, not a requirement. MULLIGAN: no-land hands, all-land hands, hands with zero green sources (your ramp is green-heavy), and pure two-card-combo hands with no board, no protection, and no backup - you get blown out with nothing left.
@@ -290,7 +402,7 @@ $optMid = @'
 Turns 4-7 build the engine and find the kill. Resolve Cathars' Crusade: now every creature that enters puts a +1/+1 counter on ALL your creatures, so your board balloons and each Tayam reanimation (the returning creature is an enter trigger) grows everything. Start using Tayam - {3}, remove three counters from among your creatures to mill 3 and return a permanent of MV 3 or less from your graveyard to the battlefield - to recur Eternal Witness, Skyclave Apparition, a sac outlet, or a drain payoff every turn. Get a FREE sac outlet down (Viscera Seer / Carrion Feeder, or Ashnod's Altar / Phyrexian Altar which also make mana) and a drain payoff (Blood Artist, Zulaport Cutthroat). Find missing pieces: Survival of the Fittest pitches a creature to tutor any creature (Mikaeus, Karmic Guide, Reveillark, or a payoff), Demonic Tutor grabs anything, Final Parting / Buried Alive load the graveyard for Tayam to reanimate. Deploy Grave Pact / Dictate of Erebos so every sacrifice forces opponents to sac too - that alone dismantles boards. Hold Heroic Intervention or Akroma's Will against a wipe.
 '@
 $optLate = @'
-Turn 7+ you close. CHECK FIRST: is a drain payoff (Blood Artist / Zulaport Cutthroat / Cruel Celebrant / Bastion of Remembrance) on the battlefield? If yes, any loop becomes lethal. Cleanest lines: (1) Basking Broodscale + Cathars' Crusade - a token enters, Cathars' puts a +1/+1 counter on Broodscale, which makes a 0/1 Eldrazi Spawn, whose ETB re-triggers Cathars' - infinite ETBs, tokens, counters and {C} (sac each Spawn for mana); with a drain payoff in play, sacrifice each Spawn so every death drains (Zulaport / Cruel Celebrant / Bastion hit each opponent) and the table dies. (2) Karmic Guide + Reveillark + free sac outlet - sac both repeatedly; Reveillark's leave trigger returns Karmic Guide (power 2 or less), Karmic Guide returns Reveillark; infinite death triggers drained out by your payoff. (3) Walking Ballista + Mikaeus, the Unhallowed - NO payoff needed: remove a +1/+1 counter to ping, Ballista hits 0 counters and dies, undying returns it with a counter, repeat; aim each ping at an opponent's face to take the table to 0. (4) Devoted Druid + Vizier of Remedies - Vizier prevents the -1/-1 untap counter, so Druid untaps free for infinite green mana; sink it into Walking Ballista cast for a huge X, then ping every opponent out - that is the actual kill. FAIR CLOSE if no combo shows: Cathars' Crusade has made your board huge - swing wide for lethal, or grind by sacrificing and recurring with Tayam + Viscera Seer / Carrion Feeder while Blood Artist / Bastion drains each opponent and Grave Pact / Dictate of Erebos strips their blockers. A board of 8 pumped creatures with one Blood Artist down ends the game over two or three sacrifice cycles. Hold Akroma's Will / Heroic Intervention for the combo or swing turn.
+Turn 7+ you close. CHECK FIRST: is a drain payoff (Blood Artist / Zulaport Cutthroat / Cruel Celebrant / Bastion of Remembrance) on the battlefield? If yes, any loop becomes lethal. Cleanest lines: (1) Basking Broodscale + Cathars' Crusade - a token enters, Cathars' puts a +1/+1 counter on Broodscale, which makes a 0/1 Eldrazi Spawn, whose ETB re-triggers Cathars' - infinite ETBs, tokens, counters and {C} (sac each Spawn for mana); with a drain payoff in play, sacrifice each Spawn so every death drains (Zulaport / Cruel Celebrant / Bastion hit each opponent) and the table dies. (2) Karmic Guide + Reveillark + free sac outlet - sac both repeatedly; Reveillark's leave trigger returns Karmic Guide (power 2 or less), Karmic Guide returns Reveillark; infinite death triggers drained out by your payoff. (3) Walking Ballista + Mikaeus, the Unhallowed + a free sac outlet (Viscera Seer / Carrion Feeder / Ashnod's Altar) - NO drain payoff needed: Mikaeus's +1/+1 keeps the 0-counter Ballista alive, so sacrifice it to the outlet, undying returns it with a +1/+1 counter, remove that counter to ping, sacrifice again, and repeat; aim each ping at an opponent's face to take the table to 0. (4) Devoted Druid + Vizier of Remedies - Vizier prevents the -1/-1 untap counter, so Druid untaps free for infinite green mana; sink it into Walking Ballista cast for a huge X, then ping every opponent out - that is the actual kill. FAIR CLOSE if no combo shows: Cathars' Crusade has made your board huge - swing wide for lethal, or grind by sacrificing and recurring with Tayam + Viscera Seer / Carrion Feeder while Blood Artist / Bastion drains each opponent and Grave Pact / Dictate of Erebos strips their blockers. A board of 8 pumped creatures with one Blood Artist down ends the game over two or three sacrifice cycles. Hold Akroma's Will / Heroic Intervention for the combo or swing turn.
 '@
 $optStyle = @'
 Grindy, creature-based midrange-combo. You are the engine deck: you go a little wider and a little longer than everyone else, build an inevitable value machine with Tayam and Cathars' Crusade, and either combo-drain the table when the pieces line up or simply outlast and overrun it. Patient and resilient - Tayam reanimates your engine piece by piece, so you recover through removal and wipes - but respect the table's interaction. Hold protection, never 'go off' into open mana or an untapped blue opponent, and never start a loop unless the payoff that actually wins (a drain effect, or Ballista + Mikaeus) is already on the battlefield.
@@ -316,13 +428,13 @@ $winconsOpt = @(
 FAIR / default: Cathars' Crusade pumps a wide board of creatures and tokens - swing for lethal combat damage, OR grind by repeatedly sacrificing and recurring creatures (Tayam + Viscera Seer / Carrion Feeder) while Zulaport Cutthroat / Cruel Celebrant / Bastion of Remembrance drain each opponent 1 on every death (Blood Artist instead drains one chosen player); Grave Pact / Dictate of Erebos forces them to sac blockers alongside.
 '@.Trim(),
 @'
-Basking Broodscale + Cathars' Crusade = infinite Eldrazi Spawn, ETBs, +1/+1 counters and colorless mana (each Spawn sacs for {C}). The PAYOFF that wins is a drain on board - sacrifice each Spawn so Zulaport / Cruel Celebrant / Bastion drain each opponent to 0 (Blood Artist drains one chosen player per death). Without a payoff it is just a giant board - pivot to an Overrun/Akroma's Will swing.
+Basking Broodscale + Cathars' Crusade = infinite Eldrazi Spawn, ETBs, +1/+1 counters and colorless mana (each Spawn sacs for {C}). The PAYOFF that wins is a drain on board - sacrifice each Spawn so Zulaport / Cruel Celebrant / Bastion drain each opponent to 0 (Blood Artist drains one chosen player per death). Without a payoff it is just a giant board - pivot to an Akroma's Will alpha strike (double strike + evasion turns the board lethal).
 '@.Trim(),
 @'
 Karmic Guide + Reveillark + a free sac outlet = infinite recursion and death triggers; converts to a win ONLY through a drain payoff (Blood Artist / Zulaport / Cruel Celebrant / Bastion) - that drain on each death empties the table to 0.
 '@.Trim(),
 @'
-Walking Ballista + Mikaeus, the Unhallowed = infinite undying pings dealt DIRECTLY to each opponent's face (NO payoff needed). Alternatively, Devoted Druid + Vizier of Remedies makes infinite green mana to cast Walking Ballista for a lethal X and ping the whole table out.
+Walking Ballista + Mikaeus, the Unhallowed + a free sac outlet (Viscera Seer / Carrion Feeder / Ashnod's Altar) = infinite undying pings dealt DIRECTLY to each opponent's face, no drain payoff needed (Mikaeus's +1/+1 keeps the 0-counter Ballista alive, so the sac outlet is what loops it). Alternatively, Devoted Druid + Vizier of Remedies makes infinite green mana to fire Walking Ballista's {4} ability and ping the whole table out.
 '@.Trim()
 )
 $comboOwned = @(
@@ -331,8 +443,75 @@ $comboOwned = @(
 )
 $comboOpt = @(
   'Bracket 3: three Game Changers (Smothering Tithe, Demonic Tutor, Survival of the Fittest), late-game 2-3 card combos only, no mass land denial.',
-  'Hold combo pieces until you can protect the turn (Heroic Intervention / Akroma''s Will / Swiftfoot Boots).'
+  'Hold combo pieces until you can protect the turn (Heroic Intervention / Akroma''s Will).'
 )
+
+# --- COMMANDER-CENTRIC (synergy) play metadata (fact-checked against oracle.md) ---
+$themeSyn = @'
+A true Tayam build that no longer leaves power on the table. Tayam is still the engine AND the payoff - a low-curve Abzan +1/+1-counter shell where Cathars' Crusade and a stack of counter multipliers refill his {3} ability faster than he spends it - but it now runs the combos a Tayam deck actually wants: an infinite reanimation-drain loop through the commander, plus Walking Ballista fed by Devoted Druid + Vizier of Remedies infinite mana and by Mikaeus's undying. Almost every creature is MV 3 or less so Tayam can rebuild the deck after a wipe.
+'@
+$synWin = @'
+Tayam is the heart of this deck: every creature you play banks a vigilance counter, Cathars' Crusade plus Winding Constrictor / Hardened Scales / Branching Evolution / Good-Fortune Unicorn pile on more, and Tayam's {3}-remove-three-counters ability is always fuelled to reanimate a permanent of mana value 3 or less every turn. You have three ways to close. (1) THE COMMANDER LOOP: Tayam + Cathars' Crusade + Ashnod's Altar + Pitiless Plunderer + an aristocrat (Blood Artist, Zulaport Cutthroat, Bastion of Remembrance, or Elas il-Kor) with at least three creatures out. Sacrifice a creature to Ashnod's Altar for {C}{C}; Pitiless Plunderer makes a Treasure (that is the third mana); pay Tayam's {3}, remove three counters, mill three, and return the creature. It re-enters, so Tayam gives it a vigilance counter and Cathars' Crusade puts a +1/+1 counter on EACH creature you control - more fuel than you spent - while the aristocrat drains on every death (Zulaport Cutthroat, Bastion of Remembrance and Elas il-Kor each hit every opponent; Blood Artist drains one player at a time). Repeat for infinite drain. (2) WALKING BALLISTA: Devoted Druid + Vizier of Remedies makes infinite green mana - pump it into Walking Ballista's '{4}: put a +1/+1 counter on this creature', then remove the counters to deal infinite damage to each opponent. Walking Ballista + Mikaeus, the Unhallowed also loops with any free sac outlet (Viscera Seer, Carrion Feeder, or Ashnod's Altar): sacrifice the 0-counter Ballista, undying returns it with a +1/+1 counter, remove it to ping, repeat. Both lines deal damage DIRECTLY and need no drain payoff. (3) THE FAIR PLAN: with no combo, reanimate value every turn (Eternal Witness, Skyclave Apparition, a Spore Frog Fog-lock) and swing a counter-pumped board through Overrun for +3/+3 and trample. Most creatures here are mana value 3 or less, so Tayam rebuilds the bulk of your board after a wipe - the ones he can't return are the pricier payoffs (Mikaeus at MV 6, Mazirek and Pitiless Plunderer at MV 4).
+'@
+$synKeep = @'
+Keep hands with 2-3 lands AND at least one green source - a mana dork (Birds of Paradise, Llanowar Elves, Elvish Mystic, Devoted Druid) or a rock (Sol Ring, Arcane Signet) - so you can land Tayam on turn 3 and start activating. The best openers add a counter-engine seed (Cathars' Crusade, Good-Fortune Unicorn) or a tutor (Survival of the Fittest, Final Parting, Recruiter of the Guard, Birthing Pod). Survival of the Fittest in the opener is an auto-keep - it assembles any combo over a few turns. You do NOT need a combo piece in hand; Tayam plus the tutors find them. MULLIGAN: 0-1 land hands; all-land hands; hands with no green source (your ramp is green-heavy); and lone-combo-piece hands with no mana and no board - that is a trap.
+'@
+$synEarly = @'
+Turns 1-3: ramp and deploy small bodies, nothing fancy. Turn 1, land plus a one-mana dork (Birds of Paradise, Llanowar Elves, Elvish Mystic) or Sol Ring. Turn 2, land plus a two-mana ramp/draw piece (Arcane Signet, Sakura-Tribe Elder, Night's Whisper) or a counter producer. Turn 3, cast Tayam, Luminous Enigma ({1}{W}{B}{G}). Once Tayam is down every OTHER creature enters with a vigilance counter - that is FUEL - so deploy creatures freely and bank counters; do not activate Tayam yet. Equip Skullclamp to a one-toughness dork (Birds, Mystic) to draw two cards when it dies - your best early engine. Hold Swords to Plowshares / Path to Exile / Go for the Throat for a dangerous dork or commander, and do not over-extend into a likely board wipe.
+'@
+$synMid = @'
+Turns 4-6 build the engine. Resolve Cathars' Crusade so every creature ETB pumps your whole board, then start activating Tayam each turn - {3}, remove three counters from among your creatures, mill three, and return a permanent of mana value 3 or less: rebuy Eternal Witness, Skyclave Apparition, a sac outlet, an aristocrat, or a dead dork. Get a free sac outlet down (Viscera Seer / Carrion Feeder, or Ashnod's Altar which also makes mana) and a drain payoff (Blood Artist, Zulaport Cutthroat). Find the missing pieces: Survival of the Fittest discards a creature to tutor any creature; Birthing Pod / Eldritch Evolution sacrifice up the curve into a payoff; Final Parting / Buried Alive load the yard for Tayam; Recruiter of the Guard grabs a toughness-2 piece. If you draw a Walking Ballista half, hold it and assemble Devoted Druid + Vizier of Remedies, or Walking Ballista + Mikaeus + a free sac outlet. Hold Heroic Intervention / Swiftfoot Boots / Sylvan Safekeeper to protect the turn you go off.
+'@
+$synLate = @'
+Turn 7+ you close - check the board first. (1) COMMANDER LOOP: with Cathars' Crusade + Ashnod's Altar + Pitiless Plunderer + an aristocrat and three-plus creatures out, sacrifice and reanimate with Tayam infinitely; each death drains the table to zero. (2) DEVOTED DRUID + VIZIER OF REMEDIES: Vizier prevents the -1/-1 untap counter, so Devoted Druid untaps free for infinite green mana - pour it into Walking Ballista ({4} to add a counter, then remove counters to ping) and shoot every opponent out, no payoff needed. (3) WALKING BALLISTA + MIKAEUS, THE UNHALLOWED + a free sac outlet (Viscera Seer / Carrion Feeder / Ashnod's Altar): sacrifice the 0-counter Ballista, undying returns it with a +1/+1 counter, remove it to ping for 1, sacrifice again - infinite pings (Ashnod's Altar as the outlet also makes infinite mana). (4) FAIR CLOSE: a board pumped by Cathars' Crusade, Branching Evolution and Rishkar swings lethal through Overrun, or grind with Tayam + a sac outlet while Blood Artist / Bastion of Remembrance drains. Protect with Swiftfoot Boots / Sylvan Safekeeper / Heroic Intervention; after a wipe, Tayam reanimates your engine (mana value 3 or less) and you re-assemble.
+'@
+$synStyle = @'
+Patient engine-combo built around the commander. You are the deck with more mana, more creatures and more recursion than the table; Tayam grinds value every turn and rebuilds through removal, while the counter package quietly turns each activation counter-positive. Don't go off into open mana or an untapped blue player, hold protection for the combo turn, and remember the fair plan - a counter-pumped Overrun swing - is always there if the table breaks up your combos. Sequence so you never expose a key piece to removal a turn before you can use it.
+'@
+$howSyn = [pscustomobject]@{ win=$synWin.Trim(); keep=$synKeep.Trim(); early=$synEarly.Trim(); mid=$synMid.Trim(); late=$synLate.Trim(); style=$synStyle.Trim() }
+$winconsSyn = @(
+@'
+Infinite Tayam drain (commander loop): Tayam + Cathars' Crusade + Ashnod's Altar + Pitiless Plunderer + an aristocrat (Blood Artist / Zulaport Cutthroat / Bastion of Remembrance / Elas il-Kor), with three-plus creatures out. Sacrifice a creature to Ashnod's Altar for {C}{C}, Pitiless Plunderer makes a Treasure = Tayam's {3}; reanimate the creature, Cathars' Crusade refunds a +1/+1 counter on each creature you control (more than the three spent), and the aristocrat drains on every death (Zulaport Cutthroat / Bastion of Remembrance / Elas il-Kor hit each opponent; Blood Artist drains one player at a time). Repeat = infinite drain = table dead.
+'@.Trim(),
+@'
+Devoted Druid + Vizier of Remedies -> Walking Ballista: Vizier removes Devoted Druid's -1/-1 untap drawback, so it untaps for infinite green mana; pump Walking Ballista's '{4}: put a +1/+1 counter on this creature' and remove the counters to deal infinite damage to each opponent. Deals damage directly - no drain payoff needed.
+'@.Trim(),
+@'
+Walking Ballista + Mikaeus, the Unhallowed + a free sac outlet (Viscera Seer / Carrion Feeder / Ashnod's Altar): Mikaeus's +1/+1 keeps Ballista alive at 0 counters, so use the outlet to kill it; undying returns it with a +1/+1 counter, remove it to ping for 1, sacrifice again - infinite pings to the table (Ashnod's Altar as the outlet also makes infinite mana).
+'@.Trim(),
+@'
+Persist loop: Kitchen Finks + Cathars' Crusade + a free sac outlet (Viscera Seer / Carrion Feeder / Ashnod's Altar). Sacrifice Kitchen Finks; persist returns it with a -1/-1 counter; Cathars' Crusade puts a +1/+1 counter on each creature, and on Finks that cancels the -1/-1, so it can persist again - infinite ETBs and deaths (Ashnod's also makes infinite colorless mana). With an aristocrat in play (Blood Artist / Zulaport Cutthroat / Bastion of Remembrance / Elas il-Kor) the infinite deaths drain the table; Tayam can rebuy Finks (MV 3) if it is removed.
+'@.Trim(),
+@'
+Go-wide fair plan (backup): a board fattened by Cathars' Crusade, Branching Evolution, Rishkar and Good-Fortune Unicorn swings for lethal with Overrun's +3/+3 and trample - the close when the table breaks up your combos. Tayam rebuilds the board through removal and wipes, so the fair plan is highly resilient.
+'@.Trim()
+)
+$comboSyn = @(
+  'Bracket 3: three Game Changers (Smothering Tithe, Survival of the Fittest, Farewell), no mass land denial, no extra-turn loops.',
+  'Tayam is the primary engine and the most resilient win - it rebuilds itself after a wipe - but this build deliberately ALSO runs the strong combos a Tayam shell wants: Walking Ballista with Devoted Druid + Vizier infinite mana, Walking Ballista + Mikaeus + a free sac outlet, and the Kitchen Finks + Cathars'' Crusade + free-sac persist loop. That is the change from the older commander-only-loops version, which left Walking Ballista and the persist creature out on principle.',
+  'Walking Ballista + Mikaeus is NOT a two-card kill on its own - Mikaeus''s +1/+1 keeps a 0-counter Ballista alive, so you need a free sac outlet (you run Viscera Seer, Carrion Feeder and Ashnod''s Altar) to loop the undying. Devoted Druid + Vizier -> Walking Ballista needs no extra piece.',
+  'Hold combo pieces until you can protect the turn (Heroic Intervention / Swiftfoot Boots / Sylvan Safekeeper). The commander loop and the go-wide Overrun plan are both there if the Ballista combos get answered.'
+)
+
+# --- curated Game Changer menu for this commander (powers the in-page picker -> D.gcOptions) ---
+# High-synergy, Bracket-3-legal GCs (the silly cEDH chase ones are excluded). The engine enriches each
+# with price / owned / image / synergy; the page lets you swap within the bracket's GC cap.
+$gcPicksTxt = @'
+Smothering Tithe | Snowballing Treasure ramp that funds Tayam's {3} ability all game; runs in every build.
+Survival of the Fittest | Repeatable creature tutor that also bins creatures for Tayam to reanimate - the deck's consistency engine.
+Demonic Tutor | Unconditional any-card tutor - the most flexible single consistency slot.
+Farewell | Modal exile sweeper: wipe exactly the permanent types you need, around your own board, then rebuild via Tayam.
+Crop Rotation | Sacrifices a land to fetch Phyrexian Tower (a free sac outlet) or Bojuka Bog at instant speed.
+Aura Shards | In a creature-dense go-wide deck, every creature ETB can blow up an artifact or enchantment - brutal repeatable removal.
+Vampiric Tutor | Instant-speed any-card tutor; set up the combo or find an answer on an opponent's end step.
+Worldly Tutor | Cheap creature tutor to the top of your library - finds a sac outlet, a payoff, or a Tayam reanimation target.
+Enlightened Tutor | Fetches Cathars' Crusade, Smothering Tithe, or Survival of the Fittest to set up the engine.
+Orcish Bowmasters | Flash value + pinger that punishes opponents' card draw and leaves an Army - strong black interaction.
+Opposition Agent | Flash hatebear that hijacks every opponent's tutor and fetch - powerful disruption.
+Drannith Magistrate | Stax hatebear that shuts off opposing commanders and casting from exile or graveyard.
+'@
+$gcPicks = @(Parse $gcPicksTxt)
+"Game Changer picks: $(@($gcPicks).Count)"
 
 $variants = [ordered]@{
   owned = [pscustomobject]@{
@@ -343,7 +522,13 @@ $variants = [ordered]@{
     label='Optimal'; bracket=3; buildType='optimal'; theme=$themeOpt.Trim();
     wincons=$winconsOpt; comboNotes=$comboOpt; howToPlay=$howOpt; cards=$opt; optionalBuys=@()
   }
+  synergy = [pscustomobject]@{
+    label='Commander-centric'; bracket=3; buildType='synergy'; theme=$themeSyn.Trim();
+    wincons=$winconsSyn; comboNotes=$comboSyn; howToPlay=$howSyn; cards=$syn; optionalBuys=@()
+  }
 }
-$out = [pscustomobject]@{ commander=$commander; defaultVariant='owned'; variants=$variants }
+# curated GC menu -> variants.json gcOptions (name + reason); the engine enriches it into D.gcOptions.
+$gcOptions = @($gcPicks | ForEach-Object { [pscustomobject]@{ name=$_.name; reason=$_.reason } })
+$out = [pscustomobject]@{ commander=$commander; defaultVariant='owned'; variants=$variants; gcOptions=$gcOptions }
 $out | ConvertTo-Json -Depth 12 | Out-File -Encoding utf8 (Join-Path $outDir 'variants.json')
-"Wrote $outDir\variants.json (owned + optimal)."
+"Wrote $outDir\variants.json (owned + optimal + synergy; $(@($gcOptions).Count) GC options)."

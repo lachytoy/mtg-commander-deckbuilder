@@ -94,7 +94,7 @@ function Update-Home(){
   if(-not (Test-Path $tplPath)){ return }   # no front-door template -> skip silently
   $mp=Join-Path $SharedData 'decks.json'
   $decks=@(); if(Test-Path $mp){ $tmp=Read-Json $mp; $decks=@($tmp) }
-  $LBL=@{owned='Fully owned';optimal='Optimal'}
+  $LBL=@{owned='Fully owned';optimal='Optimal';synergy='Commander-centric'}
   $tiles=@($decks | ForEach-Object { $d=$_
     $pips=(@($d.identity) | ForEach-Object { "<svg class=`"pip`" role=`"img`" aria-label=`"$_`"><use href=`"#ms-$_`"/></svg>" }) -join ''
     $builds=(@($d.builds) | ForEach-Object { if($LBL[$_]){$LBL[$_]}else{$_} }) -join ' / '
@@ -386,6 +386,7 @@ switch($Stage){
    $names=New-Object System.Collections.Generic.List[string]
    $names.Add($vf.commander)
    foreach($vk in $vf.variants.PSObject.Properties.Name){ $v=$vf.variants.$vk; foreach($c in $v.cards){$names.Add($c.name)}; foreach($c in $v.optionalBuys){$names.Add($c.name)} }
+   if($vf.gcOptions){ foreach($g in $vf.gcOptions){ if($g.name){$names.Add($g.name)} } }   # GC picker menu - fetch any uncached
    $missing=@($names | Where-Object {$_ -and -not $scry.ContainsKey($_.ToLower())} | Select-Object -Unique)
    if($missing.Count){ $m=Get-ScryfallCards $missing; foreach($k in $m.Keys){ $scry[$k]=$m[$k] } }
    $cmdSc=$scry[$vf.commander.ToLower()]; $cmdCI=@(); if($cmdSc){$cmdCI=@($cmdSc.color_identity)}
@@ -403,10 +404,22 @@ switch($Stage){
    foreach($vk in $vf.variants.PSObject.Properties.Name){ $v=$vf.variants.$vk; $vc=EnrichList $v.cards
      $variants[$vk]=[pscustomobject]@{label=$v.label;bracket=$v.bracket;buildType=$v.buildType;theme=$v.theme;wincons=$v.wincons;comboNotes=$v.comboNotes;howToPlay=$v.howToPlay;cards=$vc;optionalBuys=(EnrichList $v.optionalBuys);combos=(Get-Combos $vf.commander $vc)} }
    $cmd=Enrich $vf.commander 'commander' 'Your chosen commander.' 1
+   # curated Game Changer menu -> enriched for the in-page GC picker (price/owned/image/synergy + is_gc verify)
+   $gcOpts=@()
+   if($vf.gcOptions){ foreach($g in $vf.gcOptions){ if(-not $g.name){continue}
+     $e=Enrich $g.name $null $g.reason 1
+     if(-not $e.is_gc){ Write-Warning "gcOptions: '$($g.name)' is not on the Game Changers list (kept anyway)." }
+     $gcOpts+=$e } }
    # pool: owned cards legal in this commander's identity + all variant cards
    $poolMap=@{}
    function AddPool($sc){
      if(-not $sc){return}; $k=$sc.name.ToLower(); if($poolMap.ContainsKey($k)){return}
+     # skip non-deck objects (tokens/emblems/etc.) that can leak in from a Moxfield export's token rows,
+     # and anything without a real card supertype (e.g. type_line "Card") - they pollute the pool, the
+     # Add-cards drawer, and the guide audit's name universe.
+     $tl=''+$sc.type_line
+     if($tl -match '\b(Token|Emblem|Dungeon|Scheme|Phenomenon|Vanguard|Conspiracy)\b'){return}
+     if($tl -notmatch '\b(Creature|Land|Instant|Sorcery|Artifact|Enchantment|Planeswalker|Battle)\b'){return}
      $ci=@($sc.color_identity); foreach($col in $ci){ if($cmdCI -notcontains $col){return} }
      if($sc.legal -eq 'banned'){return}; if($sc.name -eq $vf.commander){return}
      $b=$buildMap[$k]; $pr=$null; if($sc.price_usd){$pr=[double]$sc.price_usd}
@@ -419,7 +432,10 @@ switch($Stage){
    # data-split: the small "deck" resource (commander + variants + fx) is separate from the big "pool"
    # so the page parses the deck instantly and only parses the pool when the Add-cards drawer first opens.
    $poolArr=@($poolMap.Values)
-   $out=[pscustomobject]@{commander=$cmd;defaultVariant=$vf.defaultVariant;variants=$variants;fxAud=$fx;poolCount=$poolArr.Count}
+   # rev = a build stamp folded into the page's localStorage key, so a fresh build cleanly drops stale
+   # in-browser edits (the deck loads from this pristine baseline) instead of silently overriding it.
+   $rev=(Get-Date).ToString('yyyyMMddHHmmss')
+   $out=[pscustomobject]@{commander=$cmd;defaultVariant=$vf.defaultVariant;variants=$variants;gcOptions=$gcOpts;fxAud=$fx;poolCount=$poolArr.Count;rev=$rev}
    # --- validate BEFORE writing: an illegal deck must NOT produce a deck-data.json ---
    $caps=@{1=0;2=0;3=3;4=999;5=999}
    $fail=New-Object System.Collections.ArrayList
@@ -457,6 +473,48 @@ switch($Stage){
      $odp=Join-Path $dir 'oracle.md'; $od.ToString() | Out-File -Encoding utf8 $odp
      "Wrote oracle.md ($([math]::Round((Get-Item $odp).Length/1KB,1)) KB, $($seen.Count) cards) - read THIS for the fact-check, not deck-data.json."
    }catch{ Write-Warning "oracle.md dump skipped (non-fatal): $($_.Exception.Message)" }
+   # ---- GUIDE AUDIT (advisory) -> data/<slug>/audit.md : catches judgment-layer slips the mechanical
+   #      validators miss. (A) a card NAMED in a build's guide prose that isn't actually in that build
+   #      (the classic "I said Sun Titan but it's only in optimal" error); (B) detected combos blocked by
+   #      an enabler prereq the deck can't meet (the Tayam + Devoted Druid mirage) - keep them out of the
+   #      wincons. Advisory only (never blocks): a flag may be a deliberate "X does NOT work" mention or a
+   #      cross-build comparison - but it turns "re-read every guide" into "check this short list".
+   function Get-BlockingPrereq($prereq){
+     if(-not $prereq){ return '' }
+     $block=@(($prereq -split "`r?`n") | ForEach-Object { $_.Trim() } | Where-Object { $_ -and ($_ -match '\b(a|some|any|another) way to\b' -or $_ -match 'without (using|having)\b' -or $_ -match '\bable to\b' -or $_ -match 'some means to') })
+     ($block -join ' ')
+   }
+   try{
+     $known=@{}
+     foreach($p in $poolArr){ if($p.name){ $known[$p.name]=$true } }
+     foreach($avk in $variants.Keys){ foreach($c in $variants[$avk].cards){ $known[$c.name]=$true } }
+     $basics=@('Forest','Plains','Swamp','Island','Mountain')
+     $knownNames=@($known.Keys | Where-Object { $basics -notcontains $_ })
+     $aud=New-Object System.Text.StringBuilder
+     [void]$aud.AppendLine("# Guide audit - $($vf.commander)")
+     [void]$aud.AppendLine('# Advisory. Review each flag; not all are errors (a deliberate "X does NOT work" mention or a comparison to another build is fine).')
+     $totalFlags=0; $consoleLines=New-Object System.Collections.Generic.List[string]
+     foreach($avk in $variants.Keys){
+       $av=$variants[$avk]
+       $inb=@{}; foreach($c in $av.cards){ $inb[$c.name]=$true }; $inb[$vf.commander]=$true
+       $ah=$av.howToPlay
+       $prose=(@($av.theme,$ah.win,$ah.keep,$ah.early,$ah.mid,$ah.late,$ah.style)+@($av.wincons)+@($av.comboNotes)) -join "`n"
+       $mentNot=New-Object System.Collections.Generic.List[string]
+       foreach($name in $knownNames){
+         if($inb.ContainsKey($name)){ continue }
+         if([regex]::IsMatch($prose, ('(?<![A-Za-z])'+[regex]::Escape($name)+'(?![A-Za-z])'))){ [void]$mentNot.Add($name) }
+       }
+       $blocked=New-Object System.Collections.Generic.List[string]
+       foreach($co in @($av.combos)){ $bp=Get-BlockingPrereq $co.prereq; if($bp){ [void]$blocked.Add(((@($co.cards|ForEach-Object{$_.name}) -join ' + ')+"  -> needs: $bp")) } }
+       [void]$aud.AppendLine("`n## [$avk] $($av.label)")
+       if($mentNot.Count){ $totalFlags+=$mentNot.Count; $msg="REVIEW [$avk]: guide names $($mentNot.Count) card(s) NOT in this build: $((@($mentNot)) -join ', ')"; [void]$aud.AppendLine($msg); [void]$consoleLines.Add($msg) }
+       else { [void]$aud.AppendLine("OK: every card named in the guide is in this build.") }
+       if($blocked.Count){ [void]$aud.AppendLine("Detected combos blocked by an unmet prereq (keep these OUT of the wincons):"); foreach($b in $blocked){ [void]$aud.AppendLine("   - $b"); [void]$consoleLines.Add("BLOCKED [$avk]: $b") } }
+     }
+     $audp=Join-Path $dir 'audit.md'; $aud.ToString() | Out-File -Encoding utf8 $audp
+     if($totalFlags){ "Guide audit: $totalFlags card-mention flag(s) to review -> $audp" } else { "Guide audit: clean - every card named in each guide is in that build -> $audp" }
+     foreach($cl in $consoleLines){ "   $cl" }
+   }catch{ Write-Warning "guide audit skipped (non-fatal): $($_.Exception.Message)" }
  }
 
  'inject' {

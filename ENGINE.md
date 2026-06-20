@@ -121,6 +121,34 @@ deliberately: pick which ≤3 Game Changers each build runs (owned copies of oth
 out to stay under the cap). Use the detected combos to confirm — and to discover lines you didn't
 plan (e.g. Basking Broodscale + Cathars' Crusade showed up in the owned build).
 
+### Optional third build `synergy` ("Commander-centric") — only generate it when it DIVERGES
+Add a 3rd build ONLY for commanders where the *optimal* line drifts away from the commander — i.e. the
+strongest Bracket-3 deck would win even if the commander were a vanilla creature (**Tayam is the archetype:**
+its best combos, e.g. Basking Broodscale + Cathars' Crusade, ignore the commander entirely). For such
+commanders, `synergy` is a deliberately different deck that makes the commander the engine AND the payoff.
+For commanders whose optimal deck already routes through the commander (most dedicated build-arounds —
+Krenko, Edgar Markov), a commander-centric draft would be a near-duplicate of optimal, so **SKIP it** and
+ship just owned + optimal. Rule of thumb: if optimal and a commander-centric draft would share more than
+~85% of the list, don't bother. Philosophy (set with Lachy, 2026-06-20): **"Tayam-first, combos welcome"** —
+keep the commander central and the most resilient win, but do NOT omit strong on-theme combos just because
+they don't strictly require the commander (the older "commander-only loops" purity is retired).
+
+### Take the thinking out: complete near-combos, and never present a combo you can't actually do
+The deckbuilder's whole job is to remove decision-load. Two rules that follow:
+- **Complete cheap near-combos in the list.** If a build is ONE cheap/owned/on-theme card short of a real
+  detected combo, INCLUDE that card rather than leaving it as a "one piece away" hint (Tayam Commander-centric
+  was one persist creature short of the Cathars' Crusade + free-sac persist loop → added Kitchen Finks, which
+  completed six dangling combos at once). The in-page "add a suggested card live" feature is for *exploring
+  further* options, not the primary path.
+- **Don't lean on combos with unmet hidden prerequisites.** Commander Spellbook combos carry free-text
+  `prereq`/`otherPrerequisites` we do NOT validate by card (e.g. **Tayam + Devoted Druid** needs "boost
+  toughness by 2 without +1/+1 counters" — the deck can't supply that, so the combo is a mirage even though
+  both cards are present). The template now down-ranks any combo with a non-timing `prereq` from "ready" to
+  "need extra setup" and flags the prereq in red — but you must also keep these out of the hand-authored
+  `howToPlay`/`wincons`. **The hand-authored guide is the authoritative game plan; the auto-detected combo
+  panel is supplementary** and, being card-pair based, *under-represents* engine combos that run through a
+  complex commander ability (Tayam's reanimation loop never appears there — only in the guide).
+
 ### Play metadata you author per build (`theme`, `howToPlay`, `wincons`, `comboNotes`)
 This is the pilot's guide and it is rendered in the HTML — write it as carefully as the card list.
 - **`howToPlay.win`** — **REQUIRED, the most important field.** A plain-language "how you actually win
@@ -153,7 +181,18 @@ in `howToPlay` + `wincons` against that text. Concrete recipe:
    right numbers, targets, token types, and trigger conditions? Does every combo step the oracle supports,
    and does each loop name a payoff actually in the build that converts it to a win?
 3. Fix every mismatch in the handbuild script, re-run `handbuild` → `build`, and re-check.
-This catches the classes of bug above that a from-memory pass misses. For a thorough sweep, fan out one
+This catches the classes of bug above that a from-memory pass misses.
+
+**AUTOMATED GUIDE AUDIT (since 2026-06-20): `build` now writes `data/<slug>/audit.md` and prints flags.** It is
+the mechanical safety net under the manual fact-check — it catches two error classes automatically:
+(A) **a card NAMED in a build's guide prose that isn't actually in that build** (the classic "I wrote Sun Titan
+but it's only in optimal", or "the optimal wincon says pivot to Overrun but Overrun isn't in optimal"); and
+(B) **detected combos blocked by an enabler prereq the deck can't meet** (e.g. Tayam + Devoted Druid needs a
+non-counter toughness boost) — keep those out of the wincons. It is **advisory, never blocking**: a flag can be a
+deliberate "X does NOT work" mention or a cross-build comparison, so review each — but it turns "re-read every
+guide" into "check this short list". Card-name matching is case-sensitive full-name (short forms like "Tayam" or
+"Ballista" are not flagged), and tokens/emblems are excluded from the name universe (the pool now drops them too).
+**Always read `audit.md` (or the build's printed flags) after authoring and resolve every flag before shipping.** For a thorough sweep, fan out one
 checker per build (parallel subagents or a workflow), each given ONLY that build's oracle dump + guide and
 told to use nothing but the provided text — memory is what introduces the errors in the first place.
 
@@ -273,7 +312,8 @@ mtg-deckbuilder/
     decks.json                   SHARED — the deck-library manifest (one entry per built deck)
     <slug>/                      per-commander: edhrec*.json, build-sheet.json, candidates-cards.json,
                                  candidates.md (compact digest), variants.json, deck-data.json, pool-data.json,
-                                 oracle.md (compact per-card oracle dump for the fact-check step)
+                                 oracle.md (compact per-card oracle dump for the fact-check step),
+                                 audit.md (advisory guide audit: cards named-but-not-in-build + blocked combos)
 ```
 **Workspace vs code (so this can ship as an installed plugin):** the engine + HTML templates always load from
 the `engine/` folder (`$PSScriptRoot`), wherever installed. The user's data/decks/index.html — the "workspace" —

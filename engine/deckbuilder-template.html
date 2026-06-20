@@ -125,6 +125,53 @@
   .vrm{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;border:1px solid var(--line2);background:var(--bg3);color:var(--gc);font-weight:800;cursor:pointer;display:none}
   .vsw{position:absolute;top:6px;right:36px;width:24px;height:24px;border-radius:50%;border:1px solid var(--line2);background:var(--bg3);color:var(--acc);font-weight:800;cursor:pointer;display:none}
   .editing .vrm,.editing .vsw{display:block} .editing .card{padding-right:66px}
+  /* Game Changer picker */
+  .gcpanel .gccount{font-size:12px;font-weight:800;color:var(--gc);background:rgba(255,107,139,.12);border-radius:999px;padding:2px 9px;margin-left:6px;vertical-align:middle}
+  .gcpanel .gccount.full{color:var(--owned);background:rgba(67,209,122,.12)}
+  .gccur{display:flex;flex-direction:column;gap:8px}
+  .gcalts{display:grid;grid-template-columns:repeat(auto-fill,minmax(335px,1fr));gap:10px}
+  .gcrow{display:flex;gap:11px;align-items:flex-start;background:var(--bg2);border:1px solid var(--line);border-radius:11px;padding:9px}
+  .gcrow.cur{border-color:var(--line2);background:var(--bg3)}
+  .gcrow.empty{justify-content:center;align-items:center;border-style:dashed;color:var(--mut);min-height:46px;font-size:12.5px}
+  .gcrow.alt:hover{border-color:var(--acc)}
+  .gcth{width:46px;height:64px;border-radius:5px;flex:none;background:#0a0c10 center/cover;cursor:zoom-in;border:1px solid var(--line)}
+  .gcmeta{flex:1;min-width:0}
+  .gcmeta .nm{font-weight:700;font-size:13.5px}
+  .gcmeta .tl{font-size:11px;color:var(--mut2)}
+  .gcmeta .rsn{font-size:12px;color:var(--mut);line-height:1.4;margin-top:2px}
+  .gcmeta .foot{display:flex;align-items:center;gap:8px;margin-top:5px;flex-wrap:wrap}
+  .gc-own{font-size:11px;font-weight:700;color:var(--owned)} .gc-buy{font-size:11px;font-weight:700;color:var(--buy)}
+  .gcact{display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex:none}
+  .gcx{background:none;border:1px solid var(--line2);color:var(--gc);border-radius:7px;width:26px;height:26px;cursor:pointer;font-size:15px;line-height:1}
+  .gcx:hover{border-color:var(--gc);background:rgba(255,107,139,.1)}
+  .btn.sm{padding:5px 10px;min-height:30px;font-size:12px}
+  .gcswap{font-size:12px}
+  .gcswap summary{cursor:pointer;color:var(--acc);font-weight:600;list-style:none;white-space:nowrap;padding:4px 0}
+  .gcswap summary::-webkit-details-marker{display:none}
+  .gcswlist{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin-top:5px;justify-content:flex-end}
+  .gcswbtn{background:var(--bg3);border:1px solid var(--line2);color:var(--txt);border-radius:7px;padding:4px 8px;font-size:11.5px;cursor:pointer}
+  .gcswbtn:hover{border-color:var(--acc);background:var(--acc);color:#0b0d12}
+  .prereq-warn{color:var(--buy);font-weight:700}
+  /* landing-tab game-plan summary */
+  .planbox{background:var(--acc-glow);border:1px solid var(--acc-d);border-radius:12px;padding:13px 15px;margin-bottom:16px}
+  .planbox .plan-which{font-size:13px;color:var(--txt);line-height:1.5}
+  .planbox .plan-tag{font-weight:800;color:var(--acc);font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-right:7px}
+  .planbox .plan-h{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--mut2);font-weight:700;margin:9px 0 3px}
+  .planbox .plan-primary{font-size:13px;line-height:1.5;color:var(--txt)}
+  .planbox .plan-link{margin-top:10px;background:none;border:none;color:var(--acc);font-weight:700;font-size:12.5px;cursor:pointer;padding:0;display:inline-block}
+  .planbox .plan-link:hover{text-decoration:underline}
+  /* Compare tab */
+  .cmptbl-wrap{overflow-x:auto;margin-bottom:18px}
+  .cmptbl{width:100%;border-collapse:collapse;font-size:13px}
+  .cmptbl th,.cmptbl td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+  .cmptbl thead th{background:var(--bg2);font-weight:700}
+  .cmptbl thead th.bcol,.cmptbl thead th.ck{color:var(--acc)}
+  .cmptbl tbody th{color:var(--mut2);font-weight:600;white-space:nowrap;background:var(--bg2)}
+  .cmptbl td.ck,.cmptbl th.ck{text-align:center;width:84px}
+  .cmptbl .yes{color:var(--owned);font-weight:800}
+  .cmptbl .no{color:var(--line2)}
+  .cmptbl td.cardcell{white-space:nowrap}
+  .cmp-h{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut2);font-weight:700;margin:6px 0 9px}
 
   h2.sec{font-size:14px;margin:22px 0 11px;display:flex;align-items:center;gap:10px;color:var(--txt)}
   h2.sec .cnt{color:var(--mut);font-weight:600;font-size:12.5px}
@@ -272,8 +319,8 @@ __MANA_SPRITE__
   var ROLE={ramp:'Ramp',"card-draw":'Card draw','spot-removal':'Removal','board-wipe':'Board wipe',protection:'Protection',synergy:'Synergy',recursion:'Recursion',land:'Land'};
   var ROLECLR={ramp:'#bfe3c4','card-draw':'#bcd9f0','spot-removal':'#f0b9a6','board-wipe':'#ff6b8b',protection:'#f5e7c6',synergy:'#c4b7d6',recursion:'#cdd4de',land:'#6b7689'};
   var TYPES=['Creatures','Sorceries','Instants','Artifacts','Enchantments','Planeswalkers','Battles','Lands','Other'];
-  var BUILDLABEL={owned:'Fully owned',optimal:'Optimal'};
-  var BUILDORDER=['owned','optimal'];
+  var BUILDLABEL={owned:'Fully owned',optimal:'Optimal',synergy:'Commander-centric'};
+  var BUILDORDER=['owned','optimal','synergy'];
   var GCCAP={1:0,2:0,3:3,4:Infinity,5:Infinity};
   // cEDH "chase" cards never suggested as replacements (matches the engine $chase denylist; D.chase can extend)
   var CHASE={};['savannah','bayou','scrubland','tundra','underground sea','taiga','plateau','volcanic island','tropical island','badlands',"gaea's cradle","serra's sanctum",'ancient tomb','mana vault','grim monolith','chrome mox','mox diamond','mox opal','mox emerald','mox jet','mox pearl','mox ruby','mox sapphire',"lion's eye diamond",'imperial seal',"mishra's workshop",'the tabernacle at pendrell vale','the one ring','cyclonic rift','mana crypt','jeweled lotus'].concat(D.chase||[]).forEach(function(x){CHASE[(''+x).toLowerCase()]=true;});
@@ -282,7 +329,11 @@ __MANA_SPRITE__
   var keys=Object.keys(VAR);
   var build=(D.defaultVariant&&VAR[D.defaultVariant])?D.defaultVariant:keys[0];
   var tab='deck', view='list', groupBy='type', buyMode='budget', filter='all', editing=false, drawerOpen=false, poolSearch='', poolFilter='all', replaceTarget=null, replaceRole=null, replaceTags=null;
-  var CK='mtgdeck:'+((D.commander&&D.commander.name)||'deck');
+  // localStorage key is stamped with the build rev: a fresh engine build (new D.rev) orphans stale
+  // in-browser edits so the deck loads from the pristine baseline instead of silently overriding it.
+  var CK='mtgdeck:'+((D.commander&&D.commander.name)||'deck')+':'+(D.rev||'0');
+  // tidy: drop this deck's edits saved under OLDER build revs so they don't accumulate across rebuilds
+  try{var _pfx='mtgdeck:'+((D.commander&&D.commander.name)||'deck')+':';for(var _i=localStorage.length-1;_i>=0;_i--){var _k=localStorage.key(_i);if(_k&&_k.indexOf(_pfx)===0&&_k.indexOf(CK)!==0)localStorage.removeItem(_k);}}catch(e){}
   function clone(x){return JSON.parse(JSON.stringify(x));}
   function keyOf(){return build;}
   var cards=[];
@@ -388,7 +439,23 @@ __MANA_SPRITE__
       '<div><div class="nm">'+((c.count>1&&!isBasic(c))?'<span class="muted">'+c.count+'× </span>':'')+esc(c.name)+' '+manaSymbols(c.mana_cost)+'</div>'+
       '<div class="tl">'+esc(c.type_line)+'</div>'+(c.reason?'<div class="rsn">'+esc(c.reason)+'</div>':'')+'<div class="foot">'+tags.join('')+incl+(c.status==='buy'?'<a class="buylink" href="'+mtg(c.name)+'" target="_blank" rel="noopener noreferrer">mtgmate</a>':'')+'</div></div></div>';
   }
+  // one-line "why this build / when to play it" — generic across commanders
+  function buildPurpose(b){
+    if(b==='owned')return 'Playable right now — 100% from your collection, zero purchases. Sleeve it up as-is.';
+    if(b==='synergy')return 'Built so '+esc((D.commander.name||'').split(',')[0])+' is the engine and a wincon — pick this to make the deck revolve around the commander.';
+    return 'The strongest Bracket-3 build and the one to aim for — your cards plus the buys worth making.';
+  }
+  // landing-tab game plan: which build + the primary win line, so you know how the deck wins without digging
+  function planSummary(){
+    var v=curV(); if(!v)return '';
+    var wc=(v.wincons||[]);
+    var primary=wc.length?'<div class="plan-h">Primary win</div><div class="plan-primary">'+linkCards(wc[0])+'</div>':'';
+    var more=wc.length>1?' · '+(wc.length-1)+' more win line'+(wc.length-1===1?'':'s'):'';
+    return '<div class="planbox"><div class="plan-which"><span class="plan-tag">'+esc(BUILDLABEL[build])+'</span> '+buildPurpose(build)+'</div>'+
+      primary+'<button class="plan-link" data-tab="play">Full pilot guide, combos'+more+' &rarr;</button></div>';
+  }
   function deckBody(){
+    var plan=planSummary();
     var list=cards.slice();if(filter==='owned')list=list.filter(function(c){return c.status==='owned';});if(filter==='buy')list=list.filter(function(c){return c.status==='buy';});
     var order=groupBy==='role'?['Ramp','Card draw','Removal','Board wipe','Protection','Synergy','Recursion','Land']:TYPES;
     function gk(c){return groupBy==='role'?(ROLE[roleOf(c)]||'Other'):cardType(c);}
@@ -396,19 +463,55 @@ __MANA_SPRITE__
     var ks=order.filter(function(k){return groups[k]&&groups[k].length;}).concat(Object.keys(groups).filter(function(k){return order.indexOf(k)<0;}));
     function sortG(g){return g.slice().sort(function(a,b){return a.name.localeCompare(b.name);});}
     if(view==='list'){
-      return '<div class="listcols">'+ks.map(function(k){var g=sortG(groups[k]);var n=sumCount(g);return '<div class="tgroup"><h4><span>'+k+'</span><span class="gc2">'+n+'</span></h4>'+g.map(listRow).join('')+'</div>';}).join('')+'</div>';
+      return plan+'<div class="listcols">'+ks.map(function(k){var g=sortG(groups[k]);var n=sumCount(g);return '<div class="tgroup"><h4><span>'+k+'</span><span class="gc2">'+n+'</span></h4>'+g.map(listRow).join('')+'</div>';}).join('')+'</div>';
     }
-    return ks.map(function(k){var g=sortG(groups[k]);var n=sumCount(g);return '<h2 class="sec">'+k+'<span class="cnt">'+n+'</span></h2><div class="vcols">'+g.map(cardTile).join('')+'</div>';}).join('');
+    return plan+ks.map(function(k){var g=sortG(groups[k]);var n=sumCount(g);return '<h2 class="sec">'+k+'<span class="cnt">'+n+'</span></h2><div class="vcols">'+g.map(cardTile).join('')+'</div>';}).join('');
+  }
+  // ---- Game Changer picker: a curated, high-synergy GC menu (D.gcOptions). Swap one in within the
+  //      bracket's GC cap, or add into a free slot. Changes mutate the live deck + recompute combos. ----
+  function gcOpts(){var a=D.gcOptions;if(!a)return [];if(!Array.isArray(a))a=[a];return a;}
+  function gcThumb(img){return '<div class="gcth" style="background-image:url(\''+safeUrl(smallImg(img))+'\')" data-full="'+safeUrl(img)+'"></div>';}
+  function gcPanel(s){
+    var opts=gcOpts(); if(!opts.length)return '';
+    var cap=s.cap, capTxt=(cap===Infinity?'unlimited':cap);
+    var atCap=(cap!==Infinity && s.gcCards.length>=cap);
+    var emptyN=(cap===Infinity?0:Math.max(0,cap-s.gcCards.length));
+    var curNames={}; s.gcCards.forEach(function(c){curNames[lc(c.name)]=1;});
+    var slots=s.gcCards.map(function(c){
+      return '<div class="gcrow cur">'+gcThumb(c.image)+'<div class="gcmeta"><div class="nm">'+esc(c.name)+' '+manaSymbols(c.mana_cost)+'</div><div class="tl">'+esc(c.type_line)+'</div><div class="rsn">'+esc(c.reason||'')+'</div></div>'+
+        '<div class="gcact"><span class="tag gc">GC</span><button class="gcx" data-rm="'+esc(c.name)+'" title="Remove this Game Changer" aria-label="Remove '+esc(c.name)+'">&times;</button></div></div>';
+    }).join('');
+    var emptyHtml=''; for(var i=0;i<emptyN;i++){emptyHtml+='<div class="gcrow empty"><span class="muted">Empty Game Changer slot &mdash; add one below</span></div>';}
+    function swapMenu(inName){ if(!s.gcCards.length)return '';
+      return '<details class="gcswap"><summary>&#8646; Swap in</summary><div class="gcswlist"><span class="muted">replace:</span>'+
+        s.gcCards.map(function(c){return '<button class="gcswbtn" data-gcin="'+esc(inName)+'" data-gcout="'+esc(c.name)+'">'+esc(c.name)+'</button>';}).join('')+'</div></details>';
+    }
+    var alts=opts.filter(function(o){return !curNames[lc(o.name)] && !inDeck(o.name);});
+    var altHtml=alts.map(function(o){
+      var pr=(o.status==='owned')?'<span class="gc-own">owned</span>':'<span class="gc-buy">'+priceStr(o.price_usd)+'</span>';
+      var buy=(o.status!=='owned')?'<a class="buylink" href="'+mtg(o.name)+'" target="_blank" rel="noopener noreferrer">mtgmate &rarr;</a>':'';
+      var act=(!atCap?'<button class="btn sm gcaddbtn" data-gcadd="'+esc(o.name)+'">+ Add</button>':'')+swapMenu(o.name);
+      return '<div class="gcrow alt">'+gcThumb(o.image)+'<div class="gcmeta"><div class="nm">'+esc(o.name)+' '+manaSymbols(o.mana_cost)+'</div><div class="tl">'+esc(o.type_line)+'</div><div class="rsn">'+esc(o.reason||'')+'</div><div class="foot">'+pr+buy+'</div></div>'+
+        '<div class="gcact">'+act+'</div></div>';
+    }).join('');
+    var note='Bracket '+s.v.bracket+' allows up to <b>'+capTxt+'</b> Game Changers'+(atCap?' &mdash; your slots are full, so <b>swap</b> one out to try another.':' &mdash; you have room for '+emptyN+' more.');
+    return '<div class="panel gcpanel"><h3>Game Changers <span class="gccount '+(atCap?'full':'')+'">'+s.gcCards.length+'/'+capTxt+'</span></h3>'+
+      '<div class="intro">'+note+' These picks are curated for synergy with '+esc(D.commander.name)+'; swapping updates the deck list and the detected combos live.</div>'+
+      '<div class="gccur">'+slots+emptyHtml+'</div>'+
+      (altHtml?'<div class="cmb-h" style="margin:15px 0 7px">High-synergy alternatives to choose from</div><div class="gcalts">'+altHtml+'</div>':'<div class="muted small" style="margin-top:10px">Every curated pick is already in this build.</div>')+
+      '</div>';
   }
   function upgradesBody(s){
-    if(!s.buys.length) return '<div class="placeholder"><h3>No purchases needed</h3>This build is entirely from your collection — nothing to buy.</div>';
+    var gc=gcPanel(s);
+    if(!s.buys.length) return gc+'<div class="placeholder"><h3>No purchases needed</h3>This build is entirely from your collection — nothing to buy.</div>';
     // unknown-price cards can't be value-ranked (a 0.5 fallback wrongly floats them to #1); push them last in budget mode
     var list=s.buys.map(function(c){var o={};for(var k in c)o[k]=c[k];var pk=(c.price_usd!=null&&!isNaN(+c.price_usd));o.value=pk?((c.inclusion_pct||0)/Math.max(0.5,+c.price_usd)):-1;return o;});
     if(buyMode==='budget')list.sort(function(a,b){return b.value-a.value;});else list.sort(function(a,b){return (b.inclusion_pct||0)-(a.inclusion_pct||0);});
     var lowHigh=s.buys.filter(function(c){return (+c.price_usd>0)&&(+c.price_usd)<=5&&(c.inclusion_pct||0)>=30;}).sort(function(a,b){return (b.inclusion_pct||0)-(a.inclusion_pct||0);});
     function row(c){var val=(buyMode==='budget'&&(+c.price_usd>0)&&(+c.price_usd)<=5&&(c.inclusion_pct||0)>=25)?'<span class="tag val">★ value</span>':'';return '<div class="card"><div class="th" style="background-image:url(\''+safeUrl(c.image_small)+'\')" data-full="'+safeUrl(c.image)+'"></div><div><div class="nm">'+esc(c.name)+' '+manaSymbols(c.mana_cost)+'</div><div class="tl">'+esc(c.type_line)+'</div><div class="rsn">'+esc(c.reason||'')+'</div><div class="foot"><span class="price"><b style="color:var(--buy)">'+priceStr(c.price_usd)+'</b></span>'+(c.is_gc?'<span class="tag gc">GC</span>':'')+val+(c.inclusion_pct!=null?'<span class="incl">'+c.inclusion_pct+'%</span>':'')+'<a class="buylink" href="'+mtg(c.name)+'" target="_blank" rel="noopener noreferrer">mtgmate &rarr;</a></div></div></div>';}
     var opt=(s.v.optionalBuys||[]).map(row).join('');
-    return '<div class="intro">Cards to <b style="color:var(--buy)">buy</b> for the <b>'+esc(BUILDLABEL[build])+'</b> build ('+s.buys.length+', '+fmt(s.buyCost)+'). They are already counted in the deck above and marked Buy.</div>'+
+    return gc+
+      '<div class="intro">Cards to <b style="color:var(--buy)">buy</b> for the <b>'+esc(BUILDLABEL[build])+'</b> build ('+s.buys.length+', '+fmt(s.buyCost)+'). They are already counted in the deck above and marked Buy.</div>'+
       '<div class="ctl"><span class="lab">Rank by</span><div class="seg"><button data-buy="budget" class="'+(buyMode==='budget'?'on':'')+'">Best value</button><button data-buy="maxpower" class="'+(buyMode==='maxpower'?'on':'')+'">Max power</button></div></div>'+
       (lowHigh.length?'<div class="hl"><b>Low-cost, high-impact first:</b> '+lowHigh.slice(0,6).map(function(c){return esc(c.name)+' ('+fmt(c.price_usd)+')';}).join(' · ')+'</div>':'')+
       '<div class="vcols">'+list.map(row).join('')+'</div>'+
@@ -462,8 +565,21 @@ __MANA_SPRITE__
   function reqSatisfied(co,r){return satisfiers(co,r).length>0;}
   // pool cards (not in the deck, not already a piece) that satisfy a template — owned-first, cheapest, most-played
   function suggestFor(co,r){var m=matcherFor(r.name);if(!m)return [];var u=usedNames(co);return getPool().filter(function(p){return m(p)&&!inDeck(p.name)&&!u[lc(p.name)]&&!CHASE[lc(p.name)]&&(build!=='owned'||p.owned);}).sort(function(a,b){return (b.owned?1:0)-(a.owned?1:0)||(a.price_usd||0)-(b.price_usd||0)||(b.inclusion_pct||0)-(a.inclusion_pct||0);}).slice(0,6);}
-  // a combo is "ready" when every required template is satisfied by a (distinct) card now in the live deck
-  function comboReady(co){return (co.requires||[]).every(function(r){return reqSatisfied(co,r);});}
+  // Some Spellbook combos carry a free-text prerequisite beyond their named cards (e.g. "boost this
+  // creature's toughness by 2 without +1/+1 counters"). Timing-only prereqs (summoning sickness /
+  // untapped / haste) resolve on their own; anything else is an EXTRA enabler the deck must supply, so
+  // such a combo is NOT actually live just because its cards are present. Surface it instead of faking ready.
+  // Conservative: only flag a prereq that demands an EXTERNAL CAPABILITY the deck must already provide
+  // ("a way to X", "without using Y", "able to Z"). Board/resource starting-states the deck creates on its
+  // own ("with a +1/+1 counter on it", "X mana available", "untapped") are NOT blocking - flagging those
+  // would wrongly brand real combos unreliable. Better to under-flag (shows ready, prereq still visible).
+  function comboBlockingPrereq(co){ if(!co||!co.prereq)return '';
+    var lines=(''+co.prereq).split(/\n+/).map(function(s){return s.trim();}).filter(Boolean);
+    var block=lines.filter(function(l){return /\b(a|some|any|another) way to\b|without (using|having)\b|\bable to\b|some means to/i.test(l);});
+    return block.join(' ');
+  }
+  // a combo is "ready" when every required template is satisfied by a (distinct) live-deck card AND it has no extra enabler prereq
+  function comboReady(co){return (co.requires||[]).every(function(r){return reqSatisfied(co,r);}) && !comboBlockingPrereq(co);}
   // combos are baked into the variant, so they go stale after edits - keep only those whose named cards are still in the live deck
   function liveCombos(v){return ((v&&v.combos)||[]).filter(function(co){return (co.cards||[]).every(function(c){return inDeck(c.name)||lc(c.name)===lc(D.commander.name);});});}
   function comboTemplates(list){var s={};list.forEach(function(co){(co.requires||[]).forEach(function(r){s[r.name]=true;});});return Object.keys(s).map(function(n){return 'a '+n;}).join(', ');}
@@ -477,7 +593,9 @@ __MANA_SPRITE__
       if(sat.length){ var nm=sat.slice(0,3).map(function(c){return cardSpanByName(c.name);}).join(', ')+(sat.length>3?' <span class="muted">+'+(sat.length-3)+' more</span>':''); need.push(nm+' '+zone+' <span class="sg-ok">&check; in your deck</span>'); }
       else { var line='<span class="tmplname">a '+esc(r.name)+'</span> '+zone; var sg=suggestFor(co,r); if(sg.length){ line+='<div class="cmb-sug"><span class="muted">add one:</span> '+sg.map(function(p){return '<button class="sugbtn" data-addsug="'+esc(p.name)+'" title="Add '+esc(p.name)+' to the deck">+ '+esc(p.name)+' <span class="'+(p.owned?'sg-own':'sg-buy')+'">'+(p.owned?'owned':priceStr(p.price_usd))+'</span></button>';}).join('')+'</div>'; } need.push(line); } });
     if(co.mana)need.push('<span class="muted">mana:</span> '+manaSymbols(co.mana));
-    if(co.prereq)need.push('<span class="muted">'+esc(co.prereq)+'</span>');
+    var blk=comboBlockingPrereq(co);
+    if(blk)need.push('<span class="prereq-warn">&#9888; Extra setup this deck can\'t guarantee:</span> '+esc(blk));
+    else if(co.prereq)need.push('<span class="muted">'+esc(co.prereq)+'</span>');
     var needHtml='<div class="cmb-sec"><div class="cmb-h">You need</div><ul class="cmb-need">'+need.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul></div>';
     var steps=(co.steps||[]);
     var stepsHtml=steps.length?'<div class="cmb-sec"><div class="cmb-h">Steps</div><ol class="cmb-steps">'+steps.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol></div>':'';
@@ -490,15 +608,21 @@ __MANA_SPRITE__
     var h=s.v.howToPlay||{};
     function sec(t,b){ return b?'<div class="panel"><h3>'+t+'</h3>'+fmtGuide(b)+'</div>':''; }
     var combos=liveCombos(s.v);
-    var ready=combos.filter(comboReady), near=combos.filter(function(c){return !comboReady(c);});
-    var cl=combos.length?'<div class="panel"><h3>Combos to assemble ('+ready.length+' ready'+(near.length?' · '+near.length+' one piece away':'')+') · click one to see how</h3>'+
+    var ready=combos.filter(comboReady);
+    // not-ready splits two ways: completable by adding a card (unsatisfied template) vs blocked by an
+    // extra enabler this deck can't reliably supply (a free-text prereq) - the latter isn't "one card away".
+    var nearAdd=combos.filter(function(c){return !comboReady(c)&&(c.requires||[]).some(function(r){return !reqSatisfied(c,r);});});
+    var nearSetup=combos.filter(function(c){return !comboReady(c)&&nearAdd.indexOf(c)<0;});
+    var headBits='('+ready.length+' ready'+(nearAdd.length?' · '+nearAdd.length+' one card away':'')+(nearSetup.length?' · '+nearSetup.length+' need extra setup':'')+')';
+    var cl=combos.length?'<div class="panel"><h3>Combos to assemble '+headBits+' · click one to see how</h3>'+
       (ready.length?ready.map(comboCard).join(''):'<div class="muted small">No fully-assembled combos in this build.</div>')+
-      (near.length?'<div class="cmb-h" style="margin:15px 0 6px">One piece away — add '+esc(comboTemplates(near))+' to unlock these <span class="muted" style="font-weight:400">· expand one and click a suggested card to add it; combos update live</span></div>'+near.map(comboCard).join(''):'')+
+      (nearAdd.length?'<div class="cmb-h" style="margin:15px 0 6px">One card away — add '+esc(comboTemplates(nearAdd))+' to unlock these <span class="muted" style="font-weight:400">· expand one and click a suggested card to add it; combos update live</span></div>'+nearAdd.map(comboCard).join(''):'')+
+      (nearSetup.length?'<div class="cmb-h" style="margin:15px 0 6px">Need extra setup — these need an enabler this deck doesn\'t reliably run <span class="muted" style="font-weight:400">· expand to see what each requires</span></div>'+nearSetup.map(comboCard).join(''):'')+
       '</div>':'';
     var winText=h.win?'<div style="margin-bottom:10px">'+fmtGuide(h.win)+'</div>':'';
     var winList=(s.v.wincons&&s.v.wincons.length)?'<div class="cmb-h" style="margin:6px 0 5px">Win conditions</div><ul class="wincons">'+s.v.wincons.map(function(w){return '<li>'+linkCards(w)+'</li>';}).join('')+'</ul>':'';
     var winPanel=(winText||winList)?'<div class="panel" style="margin-bottom:14px"><h3>How you win this game</h3>'+winText+winList+'</div>':'';
-    return '<div class="intro">How to pilot the <b>'+esc(BUILDLABEL[build])+'</b> build at <b>Bracket '+s.v.bracket+'</b>.'+(build==='optimal'?' The Fully-owned build runs the same plan with fewer of the bought pieces.':' Toggle to <b>Optimal</b> for the upgraded version with the buy package.')+'</div>'+winPanel+'<div class="gsecs">'+sec('Keepable hands / mulligan',h.keep)+sec('Early game (turns 1-3)',h.early)+sec('Mid game (turns 4-6)',h.mid)+sec('Late game / closing',h.late)+sec('Playstyle',h.style)+'</div>'+cl;
+    return '<div class="intro">How to pilot the <b>'+esc(BUILDLABEL[build])+'</b> build at <b>Bracket '+s.v.bracket+'</b>.'+(build==='optimal'?' The Fully-owned build runs the same plan with fewer of the bought pieces.':(build==='synergy'?' Rebuilt around the commander &mdash; Tayam is the engine and the payoff, not a sidekick.':' Toggle to <b>Optimal</b> for the upgraded version with the buy package.'))+'</div>'+winPanel+'<div class="gsecs">'+sec('Keepable hands / mulligan',h.keep)+sec('Early game (turns 1-3)',h.early)+sec('Mid game (turns 4-6)',h.mid)+sec('Late game / closing',h.late)+sec('Playstyle',h.style)+'</div>'+cl;
   }
   function statsBody(s){
     var tc={};TYPES.forEach(function(t){tc[t]=0;});cards.forEach(function(c){tc[cardType(c)]+=(c.count||1);});
@@ -517,8 +641,10 @@ __MANA_SPRITE__
       {ok:s.cap===Infinity||s.gcCards.length<=s.cap,t:s.gcCards.length+' Game Changer'+(s.gcCards.length===1?'':'s')+' (Bracket '+s.v.bracket+': '+capTxt+'): '+(s.gcCards.map(function(c){return c.name;}).join(', ')||'none')}];
     var PC={W:'var(--w)',U:'var(--u)',B:'var(--b)',R:'var(--r)',G:'var(--g)'};
     var combos=liveCombos(s.v);
-    var ready=combos.filter(comboReady), near=combos.filter(function(c){return !comboReady(c);});
-    var cp=combos.length?'<div class="panel" style="margin-top:14px"><h3>Combos detected ('+ready.length+' ready) · via Commander Spellbook</h3>'+ready.slice(0,5).map(comboLine).join('')+(ready.length>5?'<div class="note">+ '+(ready.length-5)+' more ready — see the full list with step-by-step lines on the <b>How to play</b> tab.</div>':'<div class="note">Full step-by-step for each combo is on the <b>How to play</b> tab.</div>')+(near.length?'<div class="note">+ '+near.length+' more are one piece away (add '+esc(comboTemplates(near))+').</div>':'')+(ready.length>=10?'<div class="note">High combo density — this build sits at the top of its bracket; trim sac outlets/payoffs to lower it.</div>':'')+'</div>':'';
+    var ready=combos.filter(comboReady);
+    var nearAdd=combos.filter(function(c){return !comboReady(c)&&(c.requires||[]).some(function(r){return !reqSatisfied(c,r);});});
+    var nearSetup=combos.filter(function(c){return !comboReady(c)&&nearAdd.indexOf(c)<0;});
+    var cp=combos.length?'<div class="panel" style="margin-top:14px"><h3>Combos detected ('+ready.length+' ready) · via Commander Spellbook</h3>'+ready.slice(0,5).map(comboLine).join('')+(ready.length>5?'<div class="note">+ '+(ready.length-5)+' more ready — see the full list with step-by-step lines on the <b>How to play</b> tab.</div>':'<div class="note">Full step-by-step for each combo is on the <b>How to play</b> tab.</div>')+(nearAdd.length?'<div class="note">+ '+nearAdd.length+' more are one card away (add '+esc(comboTemplates(nearAdd))+').</div>':'')+(nearSetup.length?'<div class="note">'+nearSetup.length+' detected combo'+(nearSetup.length===1?'':'s')+' need an extra enabler this deck doesn\'t reliably run — see <b>How to play</b>.</div>':'')+(ready.length>=10?'<div class="note">High combo density — this build sits at the top of its bracket; trim sac outlets/payoffs to lower it.</div>':'')+'</div>':'';
     // panels paired by similar natural height so the 2-col grid packs cleanly (no stretched empty boxes):
     // short: curve + colour · medium: types + roles · tall: compliance + game plan
     return '<div class="grid2">'+
@@ -532,10 +658,56 @@ __MANA_SPRITE__
   function editStatus(s){var cls=s.total===100?'ok':(s.total>100?'over':'under');var hint=s.total===100?'<span class="hint" style="color:var(--owned)">▸ Legal 100</span>':'<span class="hint">▸ '+(s.total>100?'Cut '+(s.total-100):'Add '+(100-s.total))+' to hit 100</span>';return '<div class="editbar '+cls+'"><span class="big">'+s.total+'/100</span><span class="seps">'+s.lands+' lands · '+(s.nonCmd-s.lands)+' nonland</span>'+hint+'<span class="spacer"></span><button class="btn primary" id="openAdd">+ Add cards</button></div>';}
 
   function navBuildToggle(){
-    var bd=BUILDORDER.filter(function(t){return VAR[t];}).map(function(t){var note=t==='owned'?'Only cards you already own (0 buys)':'Owned cards + the buys worth making';return '<button class="opt '+(t===build?'on':'')+'" data-bd="'+t+'" title="'+esc(note)+'">'+BUILDLABEL[t]+'</button>';}).join('');
+    var bd=BUILDORDER.filter(function(t){return VAR[t];}).map(function(t){var note=t==='owned'?'Only cards you already own (0 buys)':(t==='synergy'?'Rebuilt around the commander — Tayam as the engine':'Owned cards + the buys worth making');return '<button class="opt '+(t===build?'on':'')+'" data-bd="'+t+'" title="'+esc(note)+'">'+BUILDLABEL[t]+'</button>';}).join('');
     return '<div class="navbuild"><span class="lab">Build</span>'+bd+'</div>';
   }
 
+  // ---- Compare tab: all builds side by side (key metrics + the exact cards that differ) ----
+  function shortBuild(k){return ({owned:'Owned',optimal:'Optimal',synergy:'Cmdr-centric'})[k]||BUILDLABEL[k]||k;}
+  function buildStats(k){
+    var v=VAR[k], cl=v.cards;
+    var nonland=cl.filter(function(c){return cardType(c)!=='Lands';});
+    var lands=sumCount(cl.filter(function(c){return cardType(c)==='Lands';}));
+    var ownedCount=sumCount(cl.filter(function(c){return c.status==='owned';}))+((D.commander.status==='owned')?1:0);
+    var buys=cl.filter(function(c){return c.status==='buy';});
+    var buyCost=buys.reduce(function(a,c){return a+(+c.price_usd||0);},0);
+    var value=cl.reduce(function(a,c){return a+((+c.price_usd||0)*(c.count||1));},0)+(+D.commander.price_usd||0);
+    var gc=cl.filter(function(c){return c.is_gc;});
+    var nlc=sumCount(nonland);
+    var avgMV=nlc?nonland.reduce(function(a,c){return a+(+c.cmc||0)*(c.count||1);},0)/nlc:0;
+    // ready-combo count: temporarily evaluate the combo helpers (which read the global `cards`) against this build
+    var save=cards; cards=cl; var ready=liveCombos(v).filter(comboReady).length; cards=save;
+    return {k:k,total:sumCount(cl)+1,lands:lands,owned:ownedCount,buys:buys.length,buyCost:buyCost,value:value,gc:gc,avgMV:avgMV,ready:ready,wincons:v.wincons||[]};
+  }
+  function compareBody(){
+    var ks=BUILDORDER.filter(function(t){return VAR[t];});
+    if(ks.length<2)return '<div class="placeholder"><h3>Only one build</h3>There&rsquo;s nothing to compare.</div>';
+    var S=ks.map(buildStats);
+    function shorten(t,n){t=''+t;return t.length>n?t.slice(0,n).replace(/\s+\S*$/,'')+'…':t;}
+    function rowM(label,fn){return '<tr><th>'+label+'</th>'+S.map(function(s){return '<td>'+fn(s)+'</td>';}).join('')+'</tr>';}
+    var mhead='<tr><th></th>'+S.map(function(s){return '<th class="bcol">'+esc(BUILDLABEL[s.k])+'</th>';}).join('')+'</tr>';
+    var metrics='<div class="cmptbl-wrap"><table class="cmptbl"><thead>'+mhead+'</thead><tbody>'+
+      rowM('When to play',function(s){return '<span class="muted small">'+esc(buildPurpose(s.k))+'</span>';})+
+      rowM('Owned',function(s){return s.owned+' / '+s.total;})+
+      rowM('To buy',function(s){return s.buys?(s.buys+' &middot; '+fmt(s.buyCost)):'<span class="muted">none</span>';})+
+      rowM('Total value',function(s){return fmt(s.value);})+
+      rowM('Game Changers',function(s){return s.gc.length?s.gc.map(function(c){return esc(c.name);}).join('<br>'):'<span class="muted">none</span>';})+
+      rowM('Ready combos',function(s){return ''+s.ready;})+
+      rowM('Avg MV (nonland)',function(s){return s.avgMV.toFixed(2);})+
+      rowM('Lands',function(s){return ''+s.lands;})+
+      rowM('Primary win',function(s){return s.wincons.length?'<span class="small">'+linkCards(shorten(s.wincons[0],120))+'</span>':'<span class="muted">&mdash;</span>';})+
+      '</tbody></table></div>';
+    // card-difference matrix: every nonbasic card NOT present in all builds, with a per-build ✓/·
+    var seen={},order=[];
+    ks.forEach(function(k){VAR[k].cards.forEach(function(c){if(isBasic(c))return;if(!seen[c.name]){seen[c.name]={name:c.name,type:cardType(c),status:c.status,price:c.price_usd,inb:{}};order.push(c.name);}seen[c.name].inb[k]=true;});});
+    var diff=order.map(function(n){return seen[n];}).filter(function(o){return ks.some(function(k){return !o.inb[k];});});
+    var shared=order.length-diff.length;
+    diff.sort(function(a,b){return (TYPES.indexOf(a.type)-TYPES.indexOf(b.type))||a.name.localeCompare(b.name);});
+    var dhead='<tr><th>Card</th>'+ks.map(function(k){return '<th class="ck">'+esc(shortBuild(k))+'</th>';}).join('')+'<th>Type</th></tr>';
+    var drows=diff.map(function(o){return '<tr><td class="cardcell">'+cardSpanByName(o.name)+(o.status==='buy'?' <span class="gc-buy">'+priceStr(o.price)+'</span>':'')+'</td>'+ks.map(function(k){return '<td class="ck">'+(o.inb[k]?'<span class="yes">&check;</span>':'<span class="no">&middot;</span>')+'</td>';}).join('')+'<td class="muted small">'+esc(o.type)+'</td></tr>';}).join('');
+    var diffTbl='<div class="cmp-h">What&rsquo;s different &mdash; '+diff.length+' cards vary, '+shared+' shared by all builds</div><div class="cmptbl-wrap"><table class="cmptbl diff"><thead>'+dhead+'</thead><tbody>'+drows+'</tbody></table></div>';
+    return '<div class="intro">All '+ks.length+' builds side by side &mdash; key metrics and the exact cards that differ, so you don&rsquo;t have to toggle. (Compares the recommended lists, not your in-browser edits.)</div>'+metrics+diffTbl;
+  }
   function tabBtn(id,label){var on=tab===id;return '<button id="tab-'+id+'" data-tab="'+id+'" role="tab" aria-controls="deckpanel" aria-selected="'+(on?'true':'false')+'" tabindex="'+(on?'0':'-1')+'" class="'+(on?'on':'')+'">'+label+'</button>';}
   function render(){
     var v=curV();
@@ -554,7 +726,7 @@ __MANA_SPRITE__
         (editing?editStatus(s2):'')+
         '<div class="legend"><span><span class="dot owned" aria-hidden="true"></span>Owned ('+s2.ownedCount+')</span><span><span class="dot buy" aria-hidden="true"></span>To buy ('+s2.buys.length+' · '+fmt(s2.buyCost)+')</span><span class="muted">'+(editing?'&#8646; replace with the next-best card · &times; remove · ':'')+'Coloured square = role · hover/focus a row for details</span></div>'+
         deckBody();
-    } else if(tab==='upgrades'){ body=upgradesBody(s2); } else if(tab==='play'){ body=playBody(s2); } else { body=statsBody(s2); }
+    } else if(tab==='upgrades'){ body=upgradesBody(s2); } else if(tab==='play'){ body=playBody(s2); } else if(tab==='compare'){ body=compareBody(); } else { body=statsBody(s2); }
 
     var app=document.getElementById('app');
     app.className='wrap'+(editing&&tab==='deck'&&v?' editing':'');
@@ -570,7 +742,7 @@ __MANA_SPRITE__
       (v?'<div class="nav"><div class="navrow"><div class="tabs" role="tablist" aria-label="Deck sections">'+
         tabBtn('deck','Deck <span class="tc">'+s2.total+'</span>')+
         tabBtn('upgrades','Upgrades <span class="tc">'+s2.buys.length+'</span>')+
-        tabBtn('stats','Stats')+tabBtn('play','How to play')+'</div>'+navBuildToggle()+'</div></div>':'')+
+        tabBtn('stats','Stats')+(keys.length>=2?tabBtn('compare','Compare'):'')+tabBtn('play','How to play')+'</div>'+navBuildToggle()+'</div></div>':'')+
       (v?'<div id="deckpanel" role="tabpanel" tabindex="0" aria-labelledby="tab-'+tab+'">'+body+'</div>':body)+
       '<footer>AI MTG Deckbuilder · cards &amp; prices: Scryfall · recommendations: EDHREC · brackets/Game Changers: Wizards of the Coast. Prices indicative (AUD approx @ '+AUD_RATE+'). Edits saved per build in this browser.</footer>';
     wire();
@@ -632,6 +804,8 @@ __MANA_SPRITE__
   function closeDrawer(){drawerOpen=false;replaceTarget=null;replaceRole=null;replaceTags=null;document.getElementById('overlay').classList.remove('open');document.getElementById('drawer').classList.remove('open');if(lastFocus&&lastFocus.focus){try{lastFocus.focus();}catch(e){}}lastFocus=null;}
   function addCard(name){var ex=null;cards.forEach(function(c){if(lc(c.name)===lc(name))ex=c;});if(ex){if(isBasic(ex)){ex.count=(ex.count||1)+1;persist();render();if(drawerOpen){fillPool();var ps=document.getElementById('poolsearch');if(ps)ps.focus();}}return;}var p=null;getPool().forEach(function(x){if(lc(x.name)===lc(name))p=x;});if(!p)return;cards.push({name:p.name,role:p.role||'synergy',tags:p.tags||[],status:p.owned?'owned':'buy',reason:'Added by you.',count:1,cmc:+p.cmc||0,type_line:p.type_line,mana_cost:p.mana_cost,oracle_text:p.oracle_text,color_identity:p.color_identity||[],price_usd:p.price_usd,image:p.image,image_small:smallImg(p.image),inclusion_pct:p.inclusion_pct,synergy:p.synergy,is_gc:!!p.is_gc,legal:'legal'});persist();render();if(drawerOpen){fillPool();var ps=document.getElementById('poolsearch');if(ps)ps.focus();}}
   function removeCard(name){cards=cards.filter(function(c){return lc(c.name)!==lc(name);});persist();render();if(drawerOpen){fillPool();var ps=document.getElementById('poolsearch');if(ps)ps.focus();}}
+  // Game Changer 1-for-1 swap: drop one current GC and add the chosen one (keeps the deck at 100 + the GC count constant).
+  function gcSwap(outName,inName){cards=cards.filter(function(c){return lc(c.name)!==lc(outName);});addCard(inName);}
   function step(name,d){var c=null;cards.forEach(function(x){if(lc(x.name)===lc(name))c=x;});if(!c)return;c.count=(c.count||1)+d;if(c.count<=0){removeCard(name);return;}persist();render();}
   function moxText(){var s='Commander\n1 '+D.commander.name+'\n\nDeck\n';TYPES.forEach(function(t){cards.filter(function(c){return cardType(c)===t;}).sort(function(a,b){return (a.cmc-b.cmc)||a.name.localeCompare(b.name);}).forEach(function(c){s+=(c.count||1)+' '+c.name+'\n';});});return s;}
   function copy(t,btn){navigator.clipboard.writeText(t).then(function(){var o=btn.textContent;btn.textContent='Copied ✓';setTimeout(function(){btn.textContent=o;},1400);});}
@@ -650,6 +824,8 @@ __MANA_SPRITE__
     each('[data-buy]',function(b){b.onclick=function(){buyMode=b.dataset.buy;render();};});
     each('[data-rm]',function(b){b.onclick=function(){removeCard(b.dataset.rm);};});
     each('[data-addsug]',function(b){b.onclick=function(){addCard(b.dataset.addsug);};});
+    each('[data-gcadd]',function(b){b.onclick=function(){addCard(b.dataset.gcadd);};});
+    each('[data-gcin]',function(b){b.onclick=function(){gcSwap(b.dataset.gcout,b.dataset.gcin);};});
     each('[data-swap]',function(b){b.onclick=function(e){e.stopPropagation();openReplace(b.dataset.swap);};});
     each('[data-dec]',function(b){b.onclick=function(){step(b.dataset.dec,-1);};});
     each('[data-inc]',function(b){b.onclick=function(){step(b.dataset.inc,1);};});
@@ -670,7 +846,7 @@ __MANA_SPRITE__
       var btns=Array.prototype.slice.call(tl.querySelectorAll('[role=tab]'));var i=btns.indexOf(document.activeElement);if(i<0)i=0;var n=btns.length,j=i;
       if(e.key==='ArrowLeft')j=(i-1+n)%n;else if(e.key==='ArrowRight')j=(i+1)%n;else if(e.key==='Home')j=0;else j=n-1;
       var nt=btns[j].getAttribute('data-tab');tab=nt;render();var f=document.getElementById('tab-'+nt);if(f)f.focus();};}
-    bindImgs('.row[data-full]');bindImgs('.th[data-full]');bindImgs('.cth[data-full]');bindImgs('.cardlink[data-full]');bindImgs('.cmd[data-full]');
+    bindImgs('.row[data-full]');bindImgs('.th[data-full]');bindImgs('.cth[data-full]');bindImgs('.cardlink[data-full]');bindImgs('.cmd[data-full]');bindImgs('.gcth[data-full]');
   }
   var dfil=[['all','All'],['owned','Owned'],['land','Lands'],['nonland','Nonland'],['gc','Game Changers']];
   document.getElementById('dfilters').innerHTML=dfil.map(function(f){return '<button data-pf="'+f[0]+'" class="'+(poolFilter===f[0]?'on':'')+'">'+f[1]+'</button>';}).join('');
