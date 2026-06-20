@@ -152,6 +152,9 @@
   .gcswbtn{background:var(--bg3);border:1px solid var(--line2);color:var(--txt);border-radius:7px;padding:4px 8px;font-size:11.5px;cursor:pointer}
   .gcswbtn:hover{border-color:var(--acc);background:var(--acc);color:#0b0d12}
   .prereq-warn{color:var(--buy);font-weight:700}
+  /* flex packages (build options) */
+  .pkggroup{margin-top:14px} .pkggroup:first-of-type{margin-top:4px}
+  .pkg-on{color:var(--owned);font-weight:700;font-size:12px;white-space:nowrap}
   /* landing-tab game-plan summary */
   .planbox{background:var(--acc-glow);border:1px solid var(--acc-d);border-radius:12px;padding:13px 15px;margin-bottom:16px}
   .planbox .plan-which{font-size:13px;color:var(--txt);line-height:1.5}
@@ -501,8 +504,36 @@ __MANA_SPRITE__
       (altHtml?'<div class="cmb-h" style="margin:15px 0 7px">High-synergy alternatives to choose from</div><div class="gcalts">'+altHtml+'</div>':'<div class="muted small" style="margin-top:10px">Every curated pick is already in this build.</div>')+
       '</div>';
   }
+  // ---- Flex packages: curated build CHOICES (D.packages) surfaced as clean in-deck swaps ----
+  function pkgList(){var a=D.packages;if(!a)return [];if(!Array.isArray(a))a=[a];return a;}
+  function pkgActiveOpt(pk){for(var i=0;i<pk.options.length;i++){var o=pk.options[i];if(o.cards&&o.cards.length&&o.cards.every(function(c){return inDeck(c.name);}))return i;}return -1;}
+  function pkgSwap(pi,oi){
+    var pk=pkgList()[pi]; if(!pk)return; var act=pkgActiveOpt(pk); if(act<0||act===oi)return;
+    pk.options[act].cards.forEach(function(c){cards=cards.filter(function(x){return lc(x.name)!==lc(c.name);});});
+    pk.options[oi].cards.forEach(function(p){ if(inDeck(p.name))return;
+      cards.push({name:p.name,role:p.role||'synergy',tags:p.tags||[],status:p.status||(p.owned?'owned':'buy'),reason:p.reason||'Added by you.',count:1,cmc:+p.cmc||0,type_line:p.type_line,mana_cost:p.mana_cost,oracle_text:p.oracle_text,color_identity:p.color_identity||[],price_usd:p.price_usd,image:p.image,image_small:p.image_small||smallImg(p.image),inclusion_pct:p.inclusion_pct,synergy:p.synergy,is_gc:!!p.is_gc,legal:p.legal||'legal'});
+    });
+    persist(); render();
+  }
+  function packagesPanel(){
+    var pks=pkgList(); if(!pks.length)return '';
+    var groups=pks.map(function(pk,pi){
+      var act=pkgActiveOpt(pk); if(act<0)return '';   // no option active in this build - skip (keeps swaps 1-for-1)
+      var opts=pk.options.map(function(o,oi){
+        var isAct=(oi===act), c0=o.cards[0];
+        var owned=o.cards.every(function(c){return c.status==='owned';});
+        var pr=owned?'<span class="gc-own">owned</span>':'<span class="gc-buy">'+o.cards.map(function(c){return c.status==='owned'?'owned':priceStr(c.price_usd);}).join(' + ')+'</span>';
+        var buy=owned?'':o.cards.filter(function(c){return c.status!=='owned';}).map(function(c){return '<a class="buylink" href="'+mtg(c.name)+'" target="_blank" rel="noopener noreferrer">mtgmate &rarr;</a>';}).join('');
+        var ctl=isAct?'<span class="pkg-on">&check; in deck</span>':'<button class="btn sm" data-pkgin="'+pi+'_'+oi+'">Swap in</button>';
+        return '<div class="gcrow '+(isAct?'cur':'alt')+'">'+(c0?gcThumb(c0.image):'')+'<div class="gcmeta"><div class="nm">'+esc(o.label)+' '+(c0?manaSymbols(c0.mana_cost):'')+'</div><div class="rsn">'+o.cards.map(function(c){return esc(c.reason||'');}).join(' ')+'</div><div class="foot">'+pr+buy+'</div></div><div class="gcact">'+ctl+'</div></div>';
+      }).join('');
+      return '<div class="pkggroup"><div class="cmb-h">'+esc(pk.name)+'</div><div class="muted small" style="margin:-2px 0 7px">'+esc(pk.note||'')+'</div><div class="gccur">'+opts+'</div></div>';
+    }).join('');
+    if(!groups.replace(/\s/g,''))return '';
+    return '<div class="panel"><h3>Build options &mdash; pick your flex slots</h3><div class="intro">Each slot has curated alternatives; swapping keeps the deck legal at 100, so you can try a different finisher, wipe or protection spell and compare the trade-offs.</div>'+groups+'</div>';
+  }
   function upgradesBody(s){
-    var gc=gcPanel(s);
+    var gc=gcPanel(s)+packagesPanel();
     if(!s.buys.length) return gc+'<div class="placeholder"><h3>No purchases needed</h3>This build is entirely from your collection — nothing to buy.</div>';
     // unknown-price cards can't be value-ranked (a 0.5 fallback wrongly floats them to #1); push them last in budget mode
     var list=s.buys.map(function(c){var o={};for(var k in c)o[k]=c[k];var pk=(c.price_usd!=null&&!isNaN(+c.price_usd));o.value=pk?((c.inclusion_pct||0)/Math.max(0.5,+c.price_usd)):-1;return o;});
@@ -826,6 +857,7 @@ __MANA_SPRITE__
     each('[data-addsug]',function(b){b.onclick=function(){addCard(b.dataset.addsug);};});
     each('[data-gcadd]',function(b){b.onclick=function(){addCard(b.dataset.gcadd);};});
     each('[data-gcin]',function(b){b.onclick=function(){gcSwap(b.dataset.gcout,b.dataset.gcin);};});
+    each('[data-pkgin]',function(b){b.onclick=function(){var p=b.dataset.pkgin.split('_');pkgSwap(+p[0],+p[1]);};});
     each('[data-swap]',function(b){b.onclick=function(e){e.stopPropagation();openReplace(b.dataset.swap);};});
     each('[data-dec]',function(b){b.onclick=function(){step(b.dataset.dec,-1);};});
     each('[data-inc]',function(b){b.onclick=function(){step(b.dataset.inc,1);};});

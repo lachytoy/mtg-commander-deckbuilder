@@ -369,6 +369,28 @@ Drannith Magistrate | Stax hatebear that shuts off opposing commanders and casti
 $gcPicks = @(Parse $gcPicksTxt)
 "Game Changer picks: $(@($gcPicks).Count)"
 
+# --- flex packages: curated build CHOICES the page surfaces as in-deck swaps (-> D.packages) ---
+# Each package is one or more "slots" with mutually-exclusive options of EQUAL size, so swapping stays at 100.
+# The option whose cards are in the build is the default; the engine enriches every option (price/owned/etc.).
+$packages = @(
+  [pscustomobject]@{ name='Finisher'; note='How the fair plan closes a counter-pumped board (1 slot).'; options=@(
+    [pscustomobject]@{ label='Overrun'; cards=@([pscustomobject]@{ name='Overrun'; reason='+3/+3 and trample to your whole team for one lethal swing - cheap, and the default in the deck.' }) }
+    [pscustomobject]@{ label='Craterhoof Behemoth'; cards=@([pscustomobject]@{ name='Craterhoof Behemoth'; reason='Bigger Overrun: +X/+X and trample where X is your creature count - usually just wins, but {5}{G}{G}{G}.' }) }
+    [pscustomobject]@{ label='Triumph of the Hordes'; cards=@([pscustomobject]@{ name='Triumph of the Hordes'; reason='Overrun with infect - only 10 poison to kill, so it ignores big life totals, but it paints a target on you.' }) }
+  )}
+  [pscustomobject]@{ name='Board wipe'; note='Your reset / catch-up sweeper (1 slot).'; options=@(
+    [pscustomobject]@{ label='Austere Command'; cards=@([pscustomobject]@{ name='Austere Command'; reason='Modal: choose two of artifacts / enchantments / small / big creatures - aim it around your own board. Default.' }) }
+    [pscustomobject]@{ label='Damnation'; cards=@([pscustomobject]@{ name='Damnation'; reason='Clean {2}{B}{B} destroy-all-creatures with no regeneration - the cheapest, most reliable reset.' }) }
+    [pscustomobject]@{ label='Toxic Deluge'; cards=@([pscustomobject]@{ name='Toxic Deluge'; reason='Pay X life for -X/-X to all creatures - kills indestructible and oversized things that dodge destroy effects.' }) }
+  )}
+  [pscustomobject]@{ name='Protect the combo'; note='Instant-speed protection for the turn you go off (1 slot).'; options=@(
+    [pscustomobject]@{ label='Heroic Intervention'; cards=@([pscustomobject]@{ name='Heroic Intervention'; reason='{1}{G}: your permanents gain hexproof + indestructible - beats targeted removal and most wraths. Default.' }) }
+    [pscustomobject]@{ label='Flawless Maneuver'; cards=@([pscustomobject]@{ name='Flawless Maneuver'; reason='Free if you control your commander (you do): your creatures gain indestructible - protection for zero mana.' }) }
+    [pscustomobject]@{ label="Tamiyo's Safekeeping"; cards=@([pscustomobject]@{ name="Tamiyo's Safekeeping"; reason='{G}: a single permanent gains hexproof + indestructible and you gain 2 life - cheap, targeted protection.' }) }
+  )}
+)
+"Flex packages: $(@($packages).Count)"
+
 $variants = [ordered]@{
   owned = [pscustomobject]@{
     label='Fully owned'; bracket=3; buildType='owned'; theme=$themeOwned.Trim();
@@ -381,6 +403,6 @@ $variants = [ordered]@{
 }
 # curated GC menu -> variants.json gcOptions (name + reason); the engine enriches it into D.gcOptions.
 $gcOptions = @($gcPicks | ForEach-Object { [pscustomobject]@{ name=$_.name; reason=$_.reason } })
-$out = [pscustomobject]@{ commander=$commander; defaultVariant='owned'; variants=$variants; gcOptions=$gcOptions }
+$out = [pscustomobject]@{ commander=$commander; defaultVariant='owned'; variants=$variants; gcOptions=$gcOptions; packages=$packages }
 $out | ConvertTo-Json -Depth 12 | Out-File -Encoding utf8 (Join-Path $outDir 'variants.json')
-"Wrote $outDir\variants.json (owned + optimal; $(@($gcOptions).Count) GC options)."
+"Wrote $outDir\variants.json (owned + optimal; $(@($gcOptions).Count) GC options; $(@($packages).Count) flex packages)."

@@ -387,6 +387,7 @@ switch($Stage){
    $names.Add($vf.commander)
    foreach($vk in $vf.variants.PSObject.Properties.Name){ $v=$vf.variants.$vk; foreach($c in $v.cards){$names.Add($c.name)}; foreach($c in $v.optionalBuys){$names.Add($c.name)} }
    if($vf.gcOptions){ foreach($g in $vf.gcOptions){ if($g.name){$names.Add($g.name)} } }   # GC picker menu - fetch any uncached
+   if($vf.packages){ foreach($pk in $vf.packages){ foreach($op in $pk.options){ foreach($c in $op.cards){ if($c.name){$names.Add($c.name)} } } } }   # flex packages - fetch any uncached
    $missing=@($names | Where-Object {$_ -and -not $scry.ContainsKey($_.ToLower())} | Select-Object -Unique)
    if($missing.Count){ $m=Get-ScryfallCards $missing; foreach($k in $m.Keys){ $scry[$k]=$m[$k] } }
    $cmdSc=$scry[$vf.commander.ToLower()]; $cmdCI=@(); if($cmdSc){$cmdCI=@($cmdSc.color_identity)}
@@ -410,6 +411,12 @@ switch($Stage){
      $e=Enrich $g.name $null $g.reason 1
      if(-not $e.is_gc){ Write-Warning "gcOptions: '$($g.name)' is not on the Game Changers list (kept anyway)." }
      $gcOpts+=$e } }
+   # flex packages -> each option's cards enriched for the in-page build-options picker
+   $pkgOut=@()
+   if($vf.packages){ foreach($pk in $vf.packages){
+     $opts=@()
+     foreach($op in $pk.options){ $oc=@($op.cards | ForEach-Object { Enrich $_.name $null $_.reason 1 }); $opts+=[pscustomobject]@{ label=$op.label; cards=$oc } }
+     $pkgOut+=[pscustomobject]@{ name=$pk.name; note=$pk.note; options=$opts } } }
    # pool: owned cards legal in this commander's identity + all variant cards
    $poolMap=@{}
    function AddPool($sc){
@@ -435,7 +442,7 @@ switch($Stage){
    # rev = a build stamp folded into the page's localStorage key, so a fresh build cleanly drops stale
    # in-browser edits (the deck loads from this pristine baseline) instead of silently overriding it.
    $rev=(Get-Date).ToString('yyyyMMddHHmmss')
-   $out=[pscustomobject]@{commander=$cmd;defaultVariant=$vf.defaultVariant;variants=$variants;gcOptions=$gcOpts;fxAud=$fx;poolCount=$poolArr.Count;rev=$rev}
+   $out=[pscustomobject]@{commander=$cmd;defaultVariant=$vf.defaultVariant;variants=$variants;gcOptions=$gcOpts;packages=$pkgOut;fxAud=$fx;poolCount=$poolArr.Count;rev=$rev}
    # --- validate BEFORE writing: an illegal deck must NOT produce a deck-data.json ---
    $caps=@{1=0;2=0;3=3;4=999;5=999}
    $fail=New-Object System.Collections.ArrayList
