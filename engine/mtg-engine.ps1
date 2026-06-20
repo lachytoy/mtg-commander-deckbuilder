@@ -174,6 +174,16 @@ function Get-Tags([string]$tl,[string]$ora){
   ,@($g | Select-Object -Unique)
 }
 # Returns hashtable lower(name) -> enriched scryfall object. Batches <=70, UTF-8 body.
+# Build our slim card record from a Scryfall card object. Captures set + collector_number so an
+# owned card can show the SPECIFIC printing the player owns (image is printing-specific).
+function ScryCardObj($c){
+  $img=$null;$imgS=$null
+  if($c.image_uris){$img=$c.image_uris.normal;$imgS=$c.image_uris.small}
+  elseif($c.card_faces -and $c.card_faces[0].image_uris){$img=$c.card_faces[0].image_uris.normal;$imgS=$c.card_faces[0].image_uris.small}
+  $ora=$c.oracle_text; if(-not $ora -and $c.card_faces){$ora=($c.card_faces|ForEach-Object{$_.oracle_text}) -join ' // '}
+  $price=$c.prices.usd; if(-not $price){$price=$c.prices.usd_foil}; if(-not $price){$price=$c.prices.usd_etched}
+  [pscustomobject]@{name=$c.name;cmc=$c.cmc;type_line=$c.type_line;mana_cost=$c.mana_cost;oracle_text=$ora;color_identity=$c.color_identity;legal=$c.legalities.commander;price_usd=$price;image=$img;image_small=$imgS;set=$c.set;collector_number=$c.collector_number}
+}
 function Get-ScryfallCards([string[]]$names){
   $map=@{}
   $u=@($names | Where-Object {$_} | Select-Object -Unique)
@@ -186,12 +196,7 @@ function Get-ScryfallCards([string[]]$names){
     $bytes=[Text.Encoding]::UTF8.GetBytes($body)
     $resp=Invoke-Retry { Invoke-RestMethod -Uri 'https://api.scryfall.com/cards/collection' -Method Post -Body $bytes -ContentType 'application/json; charset=utf-8' -Headers $UA -TimeoutSec 60 }
     foreach($c in $resp.data){
-      $img=$null;$imgS=$null
-      if($c.image_uris){$img=$c.image_uris.normal;$imgS=$c.image_uris.small}
-      elseif($c.card_faces -and $c.card_faces[0].image_uris){$img=$c.card_faces[0].image_uris.normal;$imgS=$c.card_faces[0].image_uris.small}
-      $ora=$c.oracle_text; if(-not $ora -and $c.card_faces){$ora=($c.card_faces|ForEach-Object{$_.oracle_text}) -join ' // '}
-      $price=$c.prices.usd; if(-not $price){$price=$c.prices.usd_foil}; if(-not $price){$price=$c.prices.usd_etched}
-      $obj=[pscustomobject]@{name=$c.name;cmc=$c.cmc;type_line=$c.type_line;mana_cost=$c.mana_cost;oracle_text=$ora;color_identity=$c.color_identity;legal=$c.legalities.commander;price_usd=$price;image=$img;image_small=$imgS}
+      $obj=ScryCardObj $c
       $map[$c.name.ToLower()]=$obj
       # also key by the front face so a deck/lookup that names only "Front" still resolves
       $front=(($c.name -split ' // ')[0]).Trim().ToLower()
@@ -201,6 +206,29 @@ function Get-ScryfallCards([string[]]$names){
     Start-Sleep -Milliseconds 110
   }
   if($notFound.Count){ Write-Warning "Scryfall could not classify $($notFound.Count) name(s): $((@($notFound)|Select-Object -First 8) -join ', ')$(if($notFound.Count -gt 8){' ...'})" }
+  return $map
+}
+# Classify the owned collection by the SPECIFIC printing each card is owned in (set + collector number),
+# so the deck shows the version you own. Pass 1 fetches by {set, collector_number}; pass 2 falls back to a
+# by-name fetch for rows without a printing or whose printing Scryfall can't resolve (odd set codes, promos).
+function Get-OwnedCards($owned){
+  $map=@{}
+  $withCn=@($owned | Where-Object { $_.set -and $_.collector_number })
+  for($i=0;$i -lt $withCn.Count;$i+=70){
+    $hi=[Math]::Min($i+69,$withCn.Count-1); $chunk=$withCn[$i..$hi]
+    $ids=@($chunk | ForEach-Object { @{ set=("$($_.set)").ToLower(); collector_number="$($_.collector_number)" } })
+    $body=@{ identifiers=$ids } | ConvertTo-Json -Depth 4
+    $bytes=[Text.Encoding]::UTF8.GetBytes($body)
+    $resp=$null; try{ $resp=Invoke-Retry { Invoke-RestMethod -Uri 'https://api.scryfall.com/cards/collection' -Method Post -Body $bytes -ContentType 'application/json; charset=utf-8' -Headers $UA -TimeoutSec 60 } }catch{}
+    if($resp){ foreach($c in $resp.data){ $o=ScryCardObj $c; $map[$c.name.ToLower()]=$o
+      $front=(($c.name -split ' // ')[0]).Trim().ToLower(); if($front -and $front -ne $c.name.ToLower()){ $map[$front]=$o } } }
+    Start-Sleep -Milliseconds 110
+  }
+  # pass 2: any owned name not resolved by its printing -> classic by-name fetch (default printing)
+  $unresolved=@($owned | Where-Object { $n=$_.name.ToLower(); $f=((($_.name -split ' // ')[0]).Trim().ToLower()); -not ($map.ContainsKey($n) -or $map.ContainsKey($f)) } | ForEach-Object { $_.name })
+  # Write-Host (not bare string) so this status never leaks into the function's return value.
+  Write-Host "  printings: $($withCn.Count - $unresolved.Count) resolved by set+number, $($unresolved.Count) fell back to by-name (odd set code / no printing)"
+  if($unresolved.Count){ $nm=Get-ScryfallCards $unresolved; foreach($k in $nm.Keys){ if(-not $map.ContainsKey($k)){ $map[$k]=$nm[$k] } } }
   return $map
 }
 function Get-Combos([string]$cmd,$enrichedCards){
@@ -241,10 +269,14 @@ switch($Stage){
  'collection' {
    $ownedPath=Join-Path $SharedData 'owned.json'
    if($CollectionCsv){
-     $csv=Import-Csv $CollectionCsv
-     $grouped=$csv | Group-Object Name | ForEach-Object {
-       $sum=($_.Group | ForEach-Object { [int]($_.Count) } | Measure-Object -Sum).Sum
-       [pscustomobject]@{ name=$_.Name; count=$sum } }
+     $rows=Import-Csv $CollectionCsv
+     $grouped=@($rows | Group-Object Name | ForEach-Object {
+       $g=@($_.Group)
+       $sum=($g | ForEach-Object { [int]($_.Count) } | Measure-Object -Sum).Sum
+       # capture a representative printing (set + collector number) so the deck can show the version you own;
+       # pick the first owned row that actually has a printing, else the first row.
+       $rep=@($g | Where-Object { $_.Edition -and $_.'Collector Number' })[0]; if(-not $rep){ $rep=$g[0] }
+       [pscustomobject]@{ name=$_.Name; count=$sum; set=("$($rep.Edition)").ToLower(); collector_number="$($rep.'Collector Number')"; foil="$($rep.Foil)" } })
      Save-Json $grouped $ownedPath
    } elseif(Test-Path $ownedPath){
      "No -CollectionCsv given - re-classifying from existing owned.json (e.g. after an engine change)."
@@ -253,8 +285,8 @@ switch($Stage){
      throw 'collection stage needs -CollectionCsv (or an existing data/owned.json to re-classify)'
    }
    $names=@($grouped | ForEach-Object { $_.name } | Where-Object { $_ })
-   "Owned unique names: $($names.Count) - classifying via Scryfall..."
-   $map=Get-ScryfallCards $names
+   "Owned unique names: $($names.Count) - classifying via Scryfall (by owned printing)..."
+   $map=Get-OwnedCards $grouped
    # the map carries front-face alias keys for DFCs, so dedupe to one object per card name
    $classified=@($map.Values | Sort-Object name -Unique)
    Save-Json $classified (Join-Path $SharedData 'owned-cards.json')
