@@ -12,8 +12,11 @@ Outputs: `deck-data.json`, a Moxfield-importable `.txt` per build, and a self-co
 
 **Deck model (current):** exactly TWO Bracket-3 decks per commander —
 - **`owned` (Fully owned):** the best deck from the collection right now (0 buys).
-- **`optimal` (Optimal):** the best Bracket-3 deck overall = owned cards + the buys worth making,
-  excluding the silly cEDH chase cards (the `$chase` denylist); no per-card price cap otherwise.
+- **`optimal` (Optimal):** the genuinely-best Bracket-3 deck. **Build it by starting from the commander's
+  cEDH list and STRIPPING the chase + Game Changer cards (fast mana, dual lands, extra tutors) down to a
+  legal Bracket 3** — it inherits the real cEDH combo skeleton, it is NOT just "EDHREC good-stuff". See the
+  methodology section below. (Owned-first where the cEDH staple is also in your collection; no per-card price
+  cap beyond the `$chase` exclusion.)
 
 Both lists are **hand-authored** (the AI step) in `engine/handbuild.ps1`, not auto-generated.
 The old per-bracket model (B1–B5 × owned/recommended + cEDH) and `engine/autobuild.ps1` are
@@ -110,28 +113,35 @@ ramp + tutors.
 
 ### The two builds (variant keys = `owned`, `optimal`)
 - **`owned` (Fully owned):** only cards in the collection (0 buys). The best honest deck right now.
-- **`optimal` (Optimal):** owned-first, plus the best *buys EXCLUDING the "silly cEDH" chase cards*
-  (ABUR duals, expensive Moxen, Gaea's Cradle, Ancient Tomb, Mana Vault, Imperial Seal, etc. — the
-  `$chase` denylist). **No per-card price cap**, just the chase exclusion. The HTML marks each card
-  owned/buy, shows AUD prices, and keeps the mtgmate buy links on the Upgrades tab.
+- **`optimal` (Optimal):** the genuinely-best Bracket-3 deck — built by the **cEDH-stripped methodology** below.
+  The HTML marks each card owned/buy, shows AUD prices, and keeps the mtgmate buy links on the Upgrades tab.
 
-Author both in `engine/handbuild.ps1` (pipe-delimited `Name | reason | count?` lists per build +
-the play metadata), then run `build` to enrich + detect combos + validate. The GC budget is spent
-deliberately: pick which ≤3 Game Changers each build runs (owned copies of others are simply left
-out to stay under the cap). Use the detected combos to confirm — and to discover lines you didn't
-plan (e.g. Basking Broodscale + Cathars' Crusade showed up in the owned build).
+#### Methodology: optimal = the cEDH list stripped to Bracket 3 (do NOT freestyle "good-stuff")
+The optimal build's *definition of "best" is the cEDH archetype dialled down to legal Bracket 3* — that is
+what makes it genuinely optimal instead of a pile of EDHREC staples that may not even use the commander
+(the bug Lachy caught: the old Tayam optimal won via Basking Broodscale + Cathars', ignoring Tayam). Process:
+1. **Research the commander's cEDH list** — EDHREC `/cedh` page, a Moxfield/Archidekt cEDH primer, mtgtop8.
+   Identify the real engine, the named combos, and the staple supporting cast.
+2. **Keep the legal skeleton**: the combo pieces, the efficient creatures, the engine, and the tutors/payoffs
+   that are Bracket-3-legal.
+3. **STRIP the chase + Game Changers**: fast mana (Mana Crypt/Vault, Moxen, Lion's Eye Diamond, Jeweled
+   Lotus), expensive dual lands (ABUR duals, Gaea's Cradle, Ancient Tomb), and trim to **≤3 Game Changers**
+   (cEDH runs many GC tutors — keep the best 3; the rest become `$gcPicks` GC-picker options). This is the
+   `$chase` denylist + the GC cap.
+4. **Backfill to 99** with Bracket-3 equivalents (Signets/dorks for the fast mana; shock/check/pain/fetch
+   lands for the duals; cheaper tutors) and make the manabase support the colours.
+The result inherits cEDH's tested lines without the illegal/$$$ cards (for Tayam: a Gitrog-style mill-reanimate
+engine + the Walking Ballista / persist combos). Owned-first where a cEDH staple is already in the collection;
+**no per-card price cap beyond the `$chase` exclusion.** Run `build` afterwards and confirm the detected combos
+show the cEDH lines survived the strip.
 
-### Optional third build `synergy` ("Commander-centric") — only generate it when it DIVERGES
-Add a 3rd build ONLY for commanders where the *optimal* line drifts away from the commander — i.e. the
-strongest Bracket-3 deck would win even if the commander were a vanilla creature (**Tayam is the archetype:**
-its best combos, e.g. Basking Broodscale + Cathars' Crusade, ignore the commander entirely). For such
-commanders, `synergy` is a deliberately different deck that makes the commander the engine AND the payoff.
-For commanders whose optimal deck already routes through the commander (most dedicated build-arounds —
-Krenko, Edgar Markov), a commander-centric draft would be a near-duplicate of optimal, so **SKIP it** and
-ship just owned + optimal. Rule of thumb: if optimal and a commander-centric draft would share more than
-~85% of the list, don't bother. Philosophy (set with Lachy, 2026-06-20): **"Tayam-first, combos welcome"** —
-keep the commander central and the most resilient win, but do NOT omit strong on-theme combos just because
-they don't strictly require the commander (the older "commander-only loops" purity is retired).
+#### A separate "commander-centric" 3rd build is (almost) never needed
+The old `synergy` / "Commander-centric" build existed to patch optimal *ignoring* the commander. The
+cEDH-stripped methodology fixes that at the source: for a commander whose cEDH deck is itself commander-centric
+(e.g. Tayam's mill-reanimate engine), **optimal already IS the commander-centric deck**, so a 3rd variant just
+duplicates it. **Default to two builds (owned + optimal).** The engine/template still iterate variants
+dynamically, so a 3rd key (`synergy`, label "Commander-centric") remains possible for a genuinely distinct
+angle — but only add one if it shares well under ~85% of optimal's list, otherwise it is noise.
 
 ### Take the thinking out: complete near-combos, and never present a combo you can't actually do
 The deckbuilder's whole job is to remove decision-load. Two rules that follow:
